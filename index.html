@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sales Algorithm Presentation</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        html {
+            font-size: clamp(14px, 1.5vw, 26px);
+        }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        /* Custom scrollbar for grid view */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .slide-enter {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* Matrix Effect Utils */
+        .matrix-bg {
+            background-color: #000;
+            background-image: linear-gradient(0deg, transparent 24%, rgba(0, 50, 0, .3) 25%, rgba(0, 50, 0, .3) 26%, transparent 27%, transparent 74%, rgba(0, 50, 0, .3) 75%, rgba(0, 50, 0, .3) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 50, 0, .3) 25%, rgba(0, 50, 0, .3) 26%, transparent 27%, transparent 74%, rgba(0, 50, 0, .3) 75%, rgba(0, 50, 0, .3) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+        }
+        .matrix-text {
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        @keyframes blink-red {
+            0%, 100% { opacity: 1; color: #ef4444; text-shadow: 0 0 10px #ef4444; }
+            50% { opacity: 0.5; color: #7f1d1d; text-shadow: none; }
+        }
+        .blink-red {
+            animation: blink-red 2s infinite;
+        }
+        @keyframes widthGrow {
+            0% { width: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { width: 100%; opacity: 1; }
+            100% { width: 100%; opacity: 0; } /* ループ用に一度消す */
+        }
+        .animate-\[width-grow_2s_ease-out_infinite\] {
+            animation: widthGrow 3s ease-out infinite; /* ちょっとゆっくりに調整 */
+        }
+        /* 個別の遅延設定（Tailwindのクラス生成が効かない場合用） */
+        .animate-\[width-grow_2s_ease-out_infinite_0\.5s\] { animation: widthGrow 3s ease-out infinite 0.5s; }
+        .animate-\[width-grow_2s_ease-out_infinite_1s\] { animation: widthGrow 3s ease-out infinite 1.0s; }
+        .animate-\[width-grow_2s_ease-out_infinite_1\.5s\] { animation: widthGrow 3s ease-out infinite 1.5s; }
+        .animate-\[width-grow_2s_ease-out_infinite_2s\] { animation: widthGrow 3s ease-out infinite 2.0s; }
+
+        /* タイプライター風アニメーション */
+        @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+        from, to { border-color: transparent }
+        50% { border-color: rgba(99, 102, 241, 0.5) } /* インディゴ色のカーソル */
+        }
+
+        /* 基本のタイプライタークラス */
+        .typewriter {
+        overflow: hidden;
+        white-space: nowrap;
+        width: 0; /* 初期状態は幅0 */
+        animation: typing 1.5s steps(30, end) forwards;
+        }
+
+        /* 最後の行用（カーソル点滅付き） */
+        .typewriter-cursor {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 0;
+            border-right: 2px solid rgba(99,102,241,0.5); /* カーソル線 */
+            animation: typing 2s steps(30, end) forwards, blink-caret .75s step-end infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-200 text-slate-800 overflow-hidden h-screen flex flex-col">
+
+    <div id="app" class="h-full flex flex-col">
+        </div>
+
+    <script>
+        // --- Data Definitions ---
+        const totalSlides = 30;
+        const slidesData = [
+            {
+                id: 0,
+                type: 'title',
+                title: "なぜ、その会社は「テレアポ」を捨てて\n「過去最高益」を出せたのか？",
+                subtitle: "営業課題を持つ200社が導入した「AI×インサイトセールス」の正体",
+                keymessage: "Legacy Sales is Dead. \"確率\"を支配するAI営業のアルゴリズム",
+                speaker: "株式会社ライトアップ 執行役員 小口 裕也",
+                visual: "matrix"
+            },
+            {
+                id: 2,
+                type: 'profile',
+                section: "イントロダクション",
+                title: "自己紹介・実績",
+                image: "小口さん写真.jpg", // ※お手元の画像ファイル名に書き換えてください
+                name: "小口 裕也",
+                role: "株式会社ライトアップ 執行役員",
+                bio: "大学卒業後、起業を経てライトアップに参画。中小企業支援サービスの立ち上げを主導。",
+                // ▼▼▼ 新しく追加した項目：Mission ▼▼▼
+                missionTitle: "Mission",
+                mission: "「全国、全ての中小企業を黒字にする」",
+                missionDesc: "精神論ではなく、テクノロジーとデータサイエンスの力で、再現性のある黒字化モデルを構築する。",
+                achievements: [
+                    "<b>100,000社</b>の経営支援データ解析：<br>中小企業の「勝ちパターン」を構造化。",
+                    "<b>1,000社</b>の代理店エコシステム構築：<br>ネットワーク効果による販売網の最大化。",
+                    "<b>50,000件</b>の営業ログ分析：<br>アナログな営業プロセスをデジタルデータとして蓄積・AI化。"
+                ]
+            },
+            {
+                id: 30,
+                type: 'crisis-graph',
+                section: "Introduction: The Reality",
+                title: "日本を襲う「人手不足」の未来",
+                // ▼▼▼ この内容をWARNINGの赤い枠内に入れます ▼▼▼
+                subtitle: "労働人口の急減：構造的な危機（Structural Crisis）", 
+                dataPoint: "644万人",
+                dataSource: "2030年の労働力不足予測（リクルートワークス研究所）",
+                implication: "これは一時的な景気変動ではなく、<br>不可逆的な<span class='text-red-600 font-bold'>「人口動態の変化」</span>である。",
+                crisis: "従来のような「人を大量に採用して売上をスケールさせる」モデルは物理的に維持不可能。<br>採用競争は<span class='bg-slate-800 text-white px-1'>ゼロサム</span>から<span class='bg-red-600 text-white px-1'>マイナスサム</span>へ突入する。"
+            },
+            {
+                id: 3,
+                type: 'graph-bar',
+                section: "序章: レガシーアルゴリズムの崩壊",
+                title: "「営業」が最も採用できない職種に",
+                subtitle: "営業職：採用難易度No.1のボトルネック",
+                insight: "2.31倍の高騰: 事務職（0.3倍）と比較し、営業職は約7倍。「最も採用コストが高く、最も採用できない」職種となっている。\nHigh Churn Rate: 営業職の離職率は主要産業でトップクラス（約40%が退職検討）。\n黒字倒産のリスク: 「届ける人がいない」ための倒産が急増。",
+                graphData: "job-ratio",
+                chartTitle: "職種別有効求人倍率の推移（営業職の特異点）"
+            },
+            {
+                id: 31,
+                type: 'chapter-title',
+                section: "Prologue",
+                title: "序章：なぜ「テレアポ」を<br>捨てなければならないのか",
+                subtitle: "なぜ従来の営業スタイルを変える必要があるのか"
+            },
+            {
+                id: 4,
+                type: 'cost-structure',
+                section: "序章: レガシーアルゴリズムの崩壊",
+                title: "「イチから営業組織を作る」困難",
+                subtitle: "レガシーな組織構築のリスクと高コスト構造",
+                visualPoints: [
+                    { label: "マネジメント", height: "h-16", color: "bg-red-400" },
+                    { label: "マニュアル作成", height: "h-16", color: "bg-orange-400" },
+                    { label: "オンボーディング", height: "h-20", color: "bg-amber-400" },
+                    { label: "採用費", height: "h-24", color: "bg-yellow-400" }
+                ],
+                details: [
+                    { title: "Human Capital Investment", desc: "採用費、オンボーディング（半年）、マニュアル作成、マネジメントコスト。これら全てを投下しても、回収前に離職されればROIはマイナスとなる。" },
+                    { title: "Depreciating Assets", desc: "人に依存したノウハウは、その人が辞めた瞬間に消失する。組織に資産（Asset）が残らない「フロー型」のビジネス構造。" },
+                    { title: "Warning", desc: "10年後、労働市場が完全に枯渇してからシステム化を始めても手遅れである。今すぐ「組織のOS」を入れ替える必要がある。" }
+                ]
+            },
+            {
+                id: 5,
+                type: 'comparison',
+                section: "序章: レガシーアルゴリズムの崩壊",
+                title: "解決策＝「人」に依存しない営業インフラ",
+                subtitle: "人依存からの脱却：AI × データへのシフト",
+                action: "Action: 採用できない「営業マン」を追うのではなく、「24時間365日稼働し、文句を言わず、学習し続けるAI」を雇用する経営判断が必要。",
+                left: { title: "Before (Legacy Model)", items: ["人間（不安定）", "低い（採用依存）", "属人化（Black Box）"] },
+                right: { title: "After (AI-Driven Model)", items: ["AI + Database（安定的）", "無限（サーバーリソースに依存）", "資産化（Databaseに蓄積）"] },
+                labels: ["リソース", "スケーラビリティ", "ナレッジ"]
+            },
+            {
+                id: 6,
+                type: 'legacy-limits',
+                section: "本題①: The Architecture",
+                title: "なぜ、従来の営業は売れないのか？",
+                subtitle: "レガシーアルゴリズム（総当たり攻撃）の限界",
+                impactText: "テレアポのアポイント率 0.1% の衝撃",
+                points: [
+                    { title: "Brute-force Attack", desc: "リストの上から順に電話をかける手法は、セキュリティ破りの総当たり攻撃と同じく、極めて効率が悪い。" },
+                    { title: "Low Yield", desc: "1,000件架電して1件のアポイント。残り999件は「ノイズ」として処理され、企業ブランドを毀損する。" },
+                    { title: "System Bug", desc: "99.9%のエラーを吐き出し続けるシステムを運用しているのと同じ状態。これは営業マンの能力不足ではなく、「ターゲティングのアルゴリズム」自体がバグを起こしている。" }
+                ],
+                visual: "dots-one-blue"
+            },
+            {
+                id: 32, // IDは重複しない任意の数字
+                type: 'chapter-title', // 黒背景のデザインを適用
+                section: "The Solution",
+                title: "AI×インサイトセールスの正体",
+                // 長いので改行タグ <br> を入れています
+                subtitle: "具体的にAIをどうやって営業に組み込むのか？<br>「リスト作成」の概念を根底から覆す"
+            },
+            {
+                id: 7,
+                type: 'prediction-cards',
+                section: "本題①: The Architecture",
+                title: "2025年問題：AI営業のコモディティ化",
+                subtitle: "「量産型AI営業」とフィルタリング強化",
+                graphLabel: "Generative AIによる「オートコール」「自動フォーム送信」の指数関数的増加",
+                cards: [
+                    { title: "The Threat（脅威）", desc: "誰でも安価にAIツールを使えるようになった結果、質の低い「ばら撒き型AI営業」が激増する。" },
+                    { title: "Filter Bubble（最適化）", desc: "受けて側の企業は、AIによるスパム防御（フィルタリング）を強化し、電話やメールはさらに届かなくなる。" },
+                    { title: "Conclusion（結論）", desc: "「AIで量をこなす」戦略は、来年には完全に陳腐化する。「質と推論」で差別化するしかない。" }
+                ]
+            },
+            {
+                id: 8,
+                type: 'insight-structure',
+                section: "本題①: The Architecture",
+                title: "勝つための唯一の道＝「インサイト（洞察）」",
+                subtitle: "「数打ちゃ当たる」から、「高精度な推論」へ。",
+                definition: "インサイトセールスとは、公開情報からは見えない<span class='font-bold text-sky-600'>「顧客の潜在的なペイン」</span>をデータから推論し、先回りして解決策を提示する手法。",
+                shift: {
+                    push: "× Push: 「当社のサービスを買ってください」",
+                    pull: "○ Pull (Inference): 「御社のデータ傾向から、〇〇の課題が発生している確率が高いです。その解決策を持ってきました」"
+                },
+                why: "顧客は「売り込み」は無視するが、<br>「自社の課題に対する正解」は無視できない。"
+            },
+            {
+                id: 9,
+                type: 'big-data-architecture',
+                section: "本題①: The Architecture",
+                title: "解決策＝「500万件×5万件」のビッグデータ",
+                
+                // ▼ 文字サイズ調整のため、HTMLタグ内のクラスを修正 ▼
+                
+                macroTitle: "Macro Data",
+                macroCount: "5,000,000件",
+                macroDesc: "国内ほぼ全ての法人データ。<br><span class='opacity-80 text-xs leading-snug block mt-1 font-medium'>（業種、売上、従業員数、技術スタック、求人情報、Webトラッキングデータなど）</span>",
+                
+                microTitle: "Micro Data",
+                microCount: "50,000件",
+                microDesc: "当社が20年間で蓄積した<b>「独自の営業成功ログ」</b>。<br><span class='opacity-80 text-xs leading-snug block mt-1 font-medium'>誰が（役職）、いつ、どんな言葉に反応し、どんな課題（ニーズ）を持っていたかの教師データ。</span>",
+                
+                outputTitle: "Propensity Scoring",
+                outputSub: "成約確度予測",
+                outputDesc: "一般的な「リスト作成」を根底から覆すAIスコアリング",
+
+                processDesc: "<b>Process:</b> この2つを掛け合わせ、データ基盤として<b>BigQuery</b>を採用することで、スピード・精度・拡張性の面で最適なデータベースを構築。"
+            },
+            {
+                id: 10,
+                type: 'comparison-list',
+                section: "本題①: The Architecture",
+                title: "過去データ活用による「究極のリスト化」",
+                subtitle: "Ground Truth（真実のデータ）に基づく高精度ターゲティング",
+                traditional: {
+                    title: "Traditional List",
+                    desc: "「東京都の製造業、売上10億円以上」\n→ これでは競合と同じリストになる。"
+                },
+                insight: {
+                    title: "Insight List (Our AI)",
+                    items: [
+                        { label: "Behavioral Log", value: "過去に「採用費を削減したい」と電話口で発言した履歴がある" },
+                        { label: "Timing", value: "社長が電話に出やすいのは、火曜日の14時〜16時の間である（通電ログ解析）" },
+                        { label: "Key Person", value: "決定権者は工場長の〇〇氏である" }
+                    ]
+                },
+                result: "Result: 接触率とアポ率が劇的に向上する（「つながるリスト」の生成）"
+            },
+            {
+                id: 11,
+                type: 'script-generation',
+                section: "本題①: The Architecture",
+                title: "スクリプト生成（質の自動化）",
+                subtitle: "シナリオ生成：高反応スクリプトの自動生成",
+                scenario: "Scenario Generation: LLM（大規模言語モデル）を活用し、ターゲット企業のHP情報と自社の強みを分析。",
+                
+                // データ内容は変更なし（レンダラー側で改行を制御します）
+                formula: "[Target's Pain] <span class='text-sm font-normal text-slate-500'>(抽出された課題)</span> × [Your USP] <span class='text-sm font-normal text-slate-500'>(独自の強み)</span> × [Winning Pattern] <span class='text-sm font-normal text-slate-500'>(過去の成功トーク構文)</span> ＝ [Winning Script] <span class='text-red-600 font-bold text-lg'>(断られないトーク)</span>",
+                
+                formulaDesc: "",
+                benefit: "Benefit: トップセールスの「暗黙知」を形式知化し、新人でも均質なクオリティで商談が<br>可能になる。"
+            },
+            {
+                id: 35, // 重複しない任意のID
+                type: 'chapter-title',
+                section: "Process Optimization",
+                title: "AI技術の効率性 × 人間の専門性で<br>成果を最大化",
+                subtitle: "AI × Human-in-the-Loop"
+            },
+            {
+                id: 12,
+                type: 'failure-data', 
+                section: "本題②: Process Optimization",
+                title: "ツール導入の失敗データ",
+                mainNumber: "70%",
+                subMain: "DXプロジェクトの失敗率",
+                circleText: "ツール導入\nだけでは\n解決しない",
+                statsTitle: "データ: SFA/CRMの定着率の低さ、DX失敗統計",
+                cards: [
+                    { title: "UX Friction", desc: "多機能すぎるツールは、現場のリテラシーを超えてしまい、入力負荷が増大する。" },
+                    { title: "Learning Curve", desc: "現場の営業マンは「売る」のが仕事であり、「ツールの操作を覚える」のはコストでしかない。" },
+                    { title: "Insight", desc: "人手不足の現場に学習コストを強いるのは、DX失敗の典型的なパターンである。" }
+                ]
+            },
+            {
+                id: 13,
+                type: 'cycle',
+                section: "本題②: Process Optimization",
+                title: "Optimal Role Allocation：\nAIと人のハイブリッド実装",
+                subtitle: "Human-in-the-Loop Architecture",
+                left: { 
+                    label: "AI Agent (The Brain & Hands)", 
+                    desc: "データ処理、リスト抽出、スクリプト生成、日程調整メールの自動化。\n<span class='font-bold text-blue-600 block mt-4 text-3xl'>→ 「作業（Operations）」を担う。</span>" 
+                },
+                right: { 
+                    label: "Human Operator (The Heart)", 
+                    desc: "感情の機微（Sentiment）を読む、信頼関係（Rapport）の構築、複雑な折衝、クロージング。\n<span class='font-bold text-rose-600 block mt-4 text-3xl'>→ 「対話（Communication）」を<br>担う。</span>" 
+                },
+                strategy: "Strategy: AIに全てを任せるのではなく、AIが人間の能力を拡張（Augment）する設計が最強である。"
+            },
+            {
+                id: 14,
+                type: 'flow',
+                section: "本題②: Process Optimization",
+                title: "Execution as a Service：\n成果が出るまでの「実行」を提供",
+                subtitle: "AI活用型 BPO（Business Process Outsourcing）",
+                concept: "Concept: 我々はツールベンダーではない。<span class='font-bold text-sky-600 text-2xl'>「成果（Outcome）」</span>を提供するパートナーである。",
+                steps: [
+                    "AIが戦略と\nリストを作成",
+                    "専門のオペレーターチームが\n架電・送信を実行",
+                    "御社のカレンダーに\n「アポイント」が自動的に入る"
+                ],
+                benefit: "Benefit: 御社の営業マンは、最も付加価値の高い「商談」のみに集中できる（分業体制の確立）。"
+            },
+            {
+                id: 15,
+                type: 'domain-knowledge', // 新しいタイプに変更
+                section: "本題②: Process Optimization",
+                title: "Domain Knowledge：\n各業界の商慣習を知り尽くしたプロが運用",
+                subtitle: "Industry-Specific Teams",
+                tuning: "Fine-tuning: 汎用的なAIモデルだけでは、業界特有の空気感（Context）に対応できない。",
+                teams: [
+                    {
+                        name: "建設業界特化チーム",
+                        icon: "hard-hat",
+                        color: "bg-yellow-500",
+                        items: ["「現場が動いている午前中は避ける」", "「一人親方へのアプローチ法」"]
+                    },
+                    {
+                        name: "SaaS業界特化チーム",
+                        icon: "cloud",
+                        color: "bg-indigo-500",
+                        items: ["「決裁ルートの把握」", "「リードタイムの考慮」"]
+                    }
+                ],
+                role: "Role: 各業界に精通した「AIディレクター」が、AIのアウトプットを微調整し、違和感のないアプローチを実現する。"
+            },
+            {
+                id: 16,
+                type: 'growth-loop',
+                section: "本題②: Process Optimization",
+                title: "Reinforcement Learning：\n使えば使うほど賢くなるエコシステム",
+                subtitle: "Data Feedback Loop",
+                mechanisms: [
+                    {
+                        title: "Feedback Mechanism",
+                        desc: "オペレーターが活動した結果（通話ログ、受付突破率、NG理由）は、すべて構造化データとしてAIにフィードバックされる。",
+                        icon: "database-zap"
+                    },
+                    {
+                        title: "Self-Improvement",
+                        desc: "データが増えるほど、AIの推論モデルは洗練され、アポ率（Conversion Rate）が向上していく。",
+                        icon: "trending-up"
+                    },
+                    {
+                        title: "Network Effect",
+                        desc: "クライアントが増えるほどデータが集まり、全クライアントが恩恵を受ける「データ・ネットワーク効果」が発生する。",
+                        icon: "share-2"
+                    }
+                ]
+            },
+            {
+                id: 17,
+                type: 'metrics',
+                section: "本題③: Use Case",
+                title: "導入効果サマリ",
+                subtitle: "導入200社以上の実績数値：圧倒的なパフォーマンス",
+                metrics: [
+                    { val: "最大 3.0%", label: "アポイント獲得率", desc: "通常0.1%の30倍の効率" },
+                    { val: "平均 30%UP", label: "受注率向上", desc: "質の高いリード供給による効果" },
+                    { val: "4億円以上", label: "累計売上貢献", desc: "事業成長への直接的インパクト" }
+                ],
+                scope: "Scope: 従業員数名の町工場から、上場企業の新規事業開発部まで幅広く対応。"
+            },
+            {
+                id: 40, // 重複しない任意のID
+                type: 'chapter-title',
+                section: "Case Studies",
+                title: "【事例】「脱テレアポ」で<br>過去最高益を達成した成功事例",
+                subtitle: "" // シンプルにタイトルのみで強調
+            },
+            {
+                id: 18,
+                type: 'case-study-combined', // 新しい統合タイプ
+                section: "本題③: Use Case",
+                title: "事例① 金属加工業",
+                subtitle: "Supply Chain Hack",
+                companyInfo: "東京都 / 従業員10名 / 金属加工",
+                problem: {
+                    title: "Before (課題)",
+                    items: [
+                        { label: "Dependency", text: "特定の大手メーカーの下請け依存度が高く、利益率が低い。" },
+                        { label: "Resource", text: "営業専任者不在。社長が兼務するが、現場仕事で時間が取れない。" },
+                        { label: "Failure", text: "大手に営業をかけても「口座がない」「間に合っている」と門前払い。" }
+                    ]
+                },
+                solution: {
+                    title: "After (解決策)",
+                    inference: "AIの推論：Supply Chain Hack",
+                    insight: "「大手を狙うのはレッドオーシャン。\n狙い目は『案件を抱えすぎてパンクしている同業者』である」",
+                    steps: [
+                        { label: "Variable", text: "市場データから「受注残」と「納期遅延」のシグナルを検知" },
+                        { label: "Approach", text: "「競合」ではなく「パートナー」として、「御社の溢れた案件、手伝います」とアプローチ" }
+                    ],
+                    result: "アポ率 2.95%。同業者をパートナーに変え、工場の稼働率は満タンに。"
+                }
+            },
+            {
+                id: 19,
+                type: 'case-study-combined',
+                section: "本題③: Use Case",
+                title: "事例② 動画制作会社",
+                subtitle: "Behavioral Targeting",
+                companyInfo: "従業員4名 / 動画制作・編集",
+                problem: {
+                    title: "Before (課題)",
+                    items: [
+                        { label: "Competition", text: "クラウドソーシングの普及で価格競争が激化。コンペ負けが続く。" },
+                        { label: "Targeting", text: "「これから動画を作りたい会社」を探すが、検討期間が長く受注につながらない。" }
+                    ]
+                },
+                solution: {
+                    title: "After (解決策)",
+                    inference: "AIの推論：Behavioral Targeting",
+                    insight: "「狙うべきは新規ではない。『YouTubeチャンネルを開設したが、更新が止まっている（挫折した）会社』だ」",
+                    steps: [
+                        { label: "Approach", text: "「動画作りませんか？」ではなく、「更新が止まっていませんか？ 復活のために、まずは1本無料で編集します」と提案（Micro-Conversion）" },
+                        { label: "Logic", text: "「やらなきゃいけないのに出来ていない」という顧客の負い目（Pain）を、Webクローリングデータから特定。" }
+                    ],
+                    result: "アポ率 1.5% → 信頼を得て本契約へ。\n売上 1,500万円を創出。"
+                }
+            },
+            {
+                id: 20, 
+                type: 'case-study-combined',
+                section: "本題③: Use Case",
+                title: "事例③ 人材紹介会社",
+                subtitle: "Trojan Horse Strategy",
+                companyInfo: "従業員20名 / 人材紹介",
+                problem: {
+                    title: "Before (課題)",
+                    items: [
+                        { label: "Saturation", text: "人材紹介の営業電話は1日何件もかかってくるため、<br>名乗った瞬間にガチャ切りされる。" }
+                    ]
+                },
+                solution: {
+                    title: "After (解決策)",
+                    inference: "AIの推論：Trojan Horse Strategy",
+                    insight: "「真正面から『紹介契約』を売るな。『採用のパイプ（保険）』として入り込め」",
+                    steps: [
+                        { label: "Risk Hedge Proposal", text: "ターゲットを「介護・建設業界」に限定。「万が一欠員が出た時のためのパイプ役（無料）」として提案。" }
+                    ],
+                    result: "アポ率 2.55%。門前払いを回避し、接点を確保。実際に<br>欠員が出たタイミングで連絡が入り成約へ。"
+                }
+            },
+            {
+                id: 21,
+                type: 'list-assets',
+                section: "結び: Scalability（営業のAPI化）",
+                title: "インサイトセールスで手に入る「4つの資産」",
+                subtitle: "Asset Transformation：営業ノウハウの資産化",
+                items: [
+                    { 
+                        title: "Ideal Persona (PMF)", 
+                        desc: "自社サービスが「誰に」最も刺さるのか、<span class='text-yellow-400 font-bold text-xl'>データで定義された顧客像</span>。" 
+                    },
+                    { 
+                        title: "USP Clarity", 
+                        desc: "競合と比較して、<span class='text-yellow-400 font-bold text-xl'>顧客が選ぶ「本当の理由」</span>は何か。" 
+                    },
+                    { 
+                        title: "Winning Script", 
+                        desc: "再現性のある<span class='text-yellow-400 font-bold text-xl'>「売れるトークスクリプト」</span>。" 
+                    },
+                    { 
+                        title: "Automation Workflow", 
+                        desc: "属人性を排除した、<span class='text-yellow-400 font-bold text-xl'>効率的な営業フロー</span>。" 
+                    }
+                ],
+                content: "一過性の売上だけでなく、「勝利の方程式」そのものを社内に構築する。"
+            },
+            {
+                id: 22,
+                type: 'deliverables',
+                section: "結び: Scalability",
+                title: "具体的な成果物（データとツール）",
+                subtitle: "Tangible Deliverables：物理的な成果物として提供",
+                items: [
+                    { 
+                        icon: "file-spreadsheet", 
+                        title: "Target List", 
+                        // ▼ blue-700 を yellow-400 に変更
+                        desc: "数千件の<span class='text-yellow-400 font-bold'>精査済み見込み企業リスト</span>（CSV/Excel）。" 
+                    },
+                    { 
+                        icon: "book-open", 
+                        title: "Playbook", 
+                        // ▼ blue-700 を yellow-400 に変更
+                        desc: "完成された<span class='text-yellow-400 font-bold'>トークマニュアルとFAQ</span>。" 
+                    },
+                    { 
+                        icon: "headphones", 
+                        title: "Voice Data", 
+                        // ▼ blue-700 を yellow-400 に変更
+                        desc: "実際のアポ獲得時の<span class='text-yellow-400 font-bold'>音声データ</span>（教育用教材）。" 
+                    },
+                    { 
+                        icon: "layout-dashboard", 
+                        title: "Dashboard", 
+                        // ▼ blue-700 を yellow-400 に変更
+                        desc: "AI化・自動化された<span class='text-yellow-400 font-bold'>予実管理シート</span>。" 
+                    }
+                ],
+                content: "サービス終了後も、以下のデータはすべて御社の資産として残ります。"
+            },
+            {
+                id: 23,
+                type: 'vision',
+                section: "結び: Scalability",
+                title: "私たちのビジョン",
+                content: "全国、全ての中小企業を黒字にする。",
+                subtext: "人を雇うリスクを負う前に、変動費で導入できるAIで「売れる仕組み」を構築してください。"
+            },
+            {
+                id: 24,
+                type: 'offer',
+                section: "結び: Scalability",
+                title: "特別オファー",
+                offerTitle: "【ITトレンド2026　視聴者限定特典】<br>御社のための「見込み客リスト」を作成します。",
+                process: "<strong>AI Inference:</strong><br>御社の商材情報を入力するだけで、AIが500万件のDBから推論を実行。",
+                items: [
+                    { 
+                        title: "Hot Leads", 
+                        desc: "今すぐ営業すべき<br>見込み企業リスト <span class='text-yellow-400 font-bold text-3xl'>100社</span>", 
+                        icon: "database" 
+                    },
+                    { 
+                        title: "Draft Script", 
+                        // ▼▼▼ ここを修正：「アプローチ文面案」を強調 ▼▼▼
+                        desc: "そのリストに刺さる<span class='text-yellow-400 font-bold text-3xl'>アプローチ文面案</span>", 
+                        icon: "file-text" 
+                    }
+                ],
+                cost: "完全無料",
+                costNote: "（本講演の視聴者限定）"
+            },
+            {
+                id: 25,
+                type: 'cta',
+                section: "Action: Deploy",
+                title: "無料生成キャンペーン申込",
+                subtitle: "インサイトセールス：見込み顧客リスト(100社分) 無料生成体験",
+                
+                formUrl: "https://forms.gle/2KkbyZyYeegzxwvC6",
+                // ▼▼▼ 修正箇所：アップロードされた画像ファイル名を指定 ▼▼▼
+                qrCodeUrl: "formQR.png", 
+
+                steps: [
+                    "QRコードからGoogleフォームへアクセス",
+                    "企業情報・課題アンケートに入力 (所要時間 約1分)",
+                    "リスト納品＆フィードバックMTGの日程調整",
+                    "後日、完成したリストとスクリプトをお渡し"
+                ],
+                
+                closing: "※精度の高いリストをご提供するため、<span class='font-bold text-indigo-600'>生成後のフィードバックMTG</span>へのご参加を必須とさせていただいております。<br>本気で営業を変えたい方のお申し込みをお待ちしております。"
+            }
+        ];
+
+        // --- State ---
+        let state = {
+            currentSlide: 0,
+            viewMode: 'slide',
+            zoomLevel: 100,
+            showSettings: false,
+            isFullScreen: false // ★これを追加
+        };
+
+        // --- Event Handlers ---
+        window.nextSlide = () => {
+            if (state.currentSlide < totalSlides - 1) {
+                state.currentSlide++;
+                render();
+            }
+        };
+
+        window.prevSlide = () => {
+            if (state.currentSlide > 0) {
+                state.currentSlide--;
+                render();
+            }
+        };
+
+        window.goToSlide = (index) => {
+            state.currentSlide = index;
+            state.viewMode = 'slide';
+            render();
+        };
+
+        window.toggleViewMode = () => {
+            state.viewMode = state.viewMode === 'slide' ? 'grid' : 'slide';
+            render();
+        };
+
+        window.toggleSettings = () => {
+            state.showSettings = !state.showSettings;
+            render();
+        };
+
+        window.setZoom = (value) => {
+            state.zoomLevel = value;
+            // HTMLのルートフォントサイズを変更（デフォルト16pxに対する%）
+            document.documentElement.style.fontSize = `${state.zoomLevel}%`;
+            // スライダーの表示更新（再レンダリングは不要だが数値表示のためDOM操作）
+            const display = document.getElementById('zoomValueDisplay');
+            if(display) display.innerText = `${state.zoomLevel}%`;
+        };
+
+        window.toggleFullScreen = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    state.isFullScreen = true;
+                    render();
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        state.isFullScreen = false;
+                        render();
+                    });
+                }
+            }
+        };
+
+        // --- Swipe Support for Touch Devices ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            // スワイプの感度（ピクセル）
+            const threshold = 50;
+            if (touchEndX < touchStartX - threshold) {
+                window.nextSlide(); // 左にスワイプ -> 次へ
+            }
+            if (touchEndX > touchStartX + threshold) {
+                window.prevSlide(); // 右にスワイプ -> 前へ
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') window.nextSlide();
+            if (e.key === 'ArrowLeft') window.prevSlide();
+            if (e.key === 'Escape') {
+                state.viewMode = 'slide';
+                render();
+            }
+        });
+
+        // --- Components (Helper Functions for HTML Generation) ---
+
+        const BackgroundDecoration = () => `
+            <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle, #0ea5e9 1px, transparent 1px); background-size: 30px 30px;"></div>
+                <div class="absolute -top-32 -right-32 w-96 h-96 bg-sky-100 rounded-full blur-3xl opacity-40"></div>
+                <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-40"></div>
+            </div>
+        `;
+
+        const SlideWrapper = (content, slide) => `
+            <div class="w-full h-full relative overflow-hidden bg-white shadow-2xl rounded-2xl flex flex-col slide-enter">
+                ${BackgroundDecoration()}
+                <div class="relative z-10 h-full flex flex-col p-6 md:p-10">
+                    <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-2">
+                        <div class="z-20">
+                            ${slide.section ? `
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="h-1 w-8 bg-sky-500 rounded-full"></span>
+                                    <span class="text-sky-600 font-bold tracking-wider text-sm uppercase">${slide.section}</span>
+                                </div>
+                            ` : ''}
+                            ${(slide.type !== 'title' && slide.type !== 'cta') ? `
+                                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 leading-tight">
+                                    ${slide.title}
+                                </h2>
+                            ` : ''}
+                        </div>
+                        <i data-lucide="brain" class="text-slate-100 absolute top-8 right-8 z-0" style="width: 100px; height: 100px; stroke-width: 0.5;"></i>
+                    </div>
+
+                    <div class="flex-1 flex flex-col justify-center relative z-10 w-full">
+                        ${content}
+                    </div>
+
+                    <div class="flex justify-between items-end mt-2 pt-2 border-t border-slate-100">
+                        <div class="text-xs text-slate-400 font-medium">AI Sales Algorithm Presentation</div>
+                        <div class="text-xs text-slate-300">© WriteUp Inc.</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // --- Main Slide Renderer ---
+        const renderSlideContent = (slide) => {
+            switch (slide.type) {
+                case 'title':
+                    const isMatrix = slide.visual === 'matrix';
+                    if (isMatrix) {
+                        return `
+                            <div class="w-full h-full relative overflow-hidden matrix-bg flex flex-col items-center justify-center text-center p-12 slide-enter rounded-2xl shadow-2xl">
+                                <div class="absolute inset-0 z-0 opacity-20 pointer-events-none" style="background: repeating-linear-gradient(0deg, transparent, transparent 50px, #0f0 50px, #0f0 51px);"></div>
+                                
+                                <div class="relative z-10 w-full max-w-6xl">
+                                    <div class="mb-8">
+                                        <p class="text-2xl md:text-3xl font-bold matrix-text tracking-widest uppercase mb-4 blink-red">0.1%</p>
+                                        <h1 class="text-4xl md:text-6xl font-black text-white mb-6 leading-tight whitespace-pre-line drop-shadow-2xl">
+                                            ${slide.title}
+                                        </h1>
+                                        <div class="h-1 w-32 bg-green-500 mx-auto mb-8"></div>
+                                        <p class="text-xl md:text-2xl text-slate-300 font-bold mb-2">${slide.subtitle}</p>
+                                        <p class="text-lg text-green-400 font-mono mb-12">${slide.keymessage}</p>
+                                    </div>
+
+                                    <div class="flex items-center justify-center gap-4 relative z-10 border-t border-slate-700 pt-8 inline-block px-12">
+                                        <div class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center">
+                                            <i data-lucide="user" class="text-slate-400 w-6 h-6"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="text-sm text-slate-500 uppercase tracking-wider">Presenter</p>
+                                            <p class="text-xl text-white font-medium">${slide.speaker}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    // Fallback for non-matrix title
+                    return `
+                        <div class="w-full h-full relative overflow-hidden bg-white flex flex-col items-center justify-center text-center p-12 slide-enter rounded-2xl shadow-2xl">
+                            ${BackgroundDecoration()}
+                            <div class="absolute inset-0 z-0">
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sky-50 rounded-full blur-3xl animate-pulse"></div>
+                            </div>
+                            
+                            <h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight relative z-10 tracking-tight whitespace-pre-line">
+                                ${slide.title}
+                            </h1>
+                            <div class="inline-block bg-slate-50 px-8 py-4 rounded-full border border-slate-200 shadow-sm mb-8 relative z-10">
+                                <p class="text-lg md:text-xl text-sky-700 font-bold">${slide.subtitle}</p>
+                            </div>
+                            <div class="flex items-center justify-center gap-4 relative z-10">
+                                <p class="text-xl text-slate-600 font-medium">${slide.speaker}</p>
+                            </div>
+                        </div>
+                    `;
+
+                case 'profile':
+                    return SlideWrapper(`
+                        <div class="flex flex-col md:flex-row h-full gap-6 items-center relative overflow-hidden bg-white rounded-2xl">
+                            
+                            <div class="w-full md:w-5/12 h-64 md:h-full relative shrink-0 rounded-xl overflow-hidden shadow-lg order-1 md:order-none group">
+                                <img src="${slide.image}" alt="${slide.name}" class="absolute inset-0 w-full h-full object-cover object-top filter saturate-105 contrast-105 transition-transform duration-700 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent md:bg-gradient-to-r md:from-slate-900/40 md:to-transparent"></div>
+                                
+                                <div class="absolute bottom-4 left-4 md:hidden text-white">
+                                    <p class="text-xs opacity-90 uppercase tracking-widest">${slide.role}</p>
+                                    <h2 class="text-3xl font-bold">${slide.name}</h2>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 flex flex-col justify-center p-2 md:p-6 z-10 order-2 md:order-none h-full overflow-y-auto">
+                                
+                                <div class="hidden md:block mb-4 shrink-0">
+                                    <div class="inline-block px-3 py-1 rounded-full bg-slate-100 border border-slate-200 mb-2">
+                                        <p class="text-slate-500 font-bold text-xs uppercase tracking-wider">${slide.role}</p>
+                                    </div>
+                                    <h2 class="text-4xl lg:text-5xl font-black text-slate-800 tracking-tight">${slide.name}</h2>
+                                    <p class="text-slate-600 mt-2 text-base">${slide.bio}</p>
+                                </div>
+
+                                <div class="bg-sky-50 border-l-4 border-sky-500 p-4 rounded-r-xl mb-6 shrink-0 shadow-sm">
+                                    <p class="text-xs font-bold text-sky-500 uppercase tracking-widest mb-1">
+                                        <i data-lucide="flag" class="inline-block w-3 h-3 mr-1"></i>${slide.missionTitle}
+                                    </p>
+                                    <p class="text-xl lg:text-2xl font-bold text-sky-900 mb-1 leading-tight">
+                                        ${slide.mission}
+                                    </p>
+                                    <p class="text-sm text-sky-700/80 leading-relaxed font-medium">
+                                        ${slide.missionDesc}
+                                    </p>
+                                </div>
+
+                                <div class="shrink-0">
+                                    <h3 class="font-bold text-slate-400 mb-3 flex items-center text-xs uppercase tracking-widest">
+                                        Data Analyst Highlights
+                                    </h3>
+                                    <div class="space-y-3">
+                                        ${slide.achievements.map(ach => `
+                                            <div class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                                <div class="bg-sky-100 text-sky-600 p-1.5 rounded-md shrink-0 mt-0.5">
+                                                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                                                </div>
+                                                <span class="text-slate-600 text-sm leading-snug">${ach}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+                
+                case 'crisis-graph':
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full relative z-10">
+                            <div class="mb-4 shrink-0 text-center md:text-left">
+                                
+                                <div class="inline-block px-4 py-1.5 rounded-full bg-red-50 border border-red-200 shadow-sm">
+                                    <p class="text-red-600 font-bold text-sm md:text-base tracking-wide flex items-center gap-2">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0"></i>
+                                        <span class="uppercase">WARNING: ${slide.subtitle}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 flex flex-col md:flex-row gap-8 items-stretch">
+                                
+                                <div class="flex-1 bg-white rounded-3xl border border-slate-200 shadow-xl p-6 relative overflow-hidden flex flex-col">
+                                    <h4 class="text-slate-500 font-bold text-sm mb-4 text-center">労働人口推移イメージ (2020-2040)</h4>
+                                    
+                                    <div class="flex-1 relative w-full min-h-[180px]">
+                                        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
+                                            <line x1="0" y1="20" x2="400" y2="20" stroke="#f1f5f9" stroke-width="1" />
+                                            <line x1="0" y1="100" x2="400" y2="100" stroke="#f1f5f9" stroke-width="1" />
+                                            <line x1="0" y1="180" x2="400" y2="180" stroke="#f1f5f9" stroke-width="1" />
+                                            
+                                            <defs>
+                                                <linearGradient id="gradCrisis" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                    <stop offset="0%" style="stop-color:#ef4444;stop-opacity:0.2" />
+                                                    <stop offset="100%" style="stop-color:#ef4444;stop-opacity:0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path d="M 0 40 C 150 50, 200 80, 400 180" fill="none" stroke="#dc2626" stroke-width="4" stroke-linecap="round" />
+                                            <path d="M 0 40 C 150 50, 200 80, 400 180 V 200 H 0 Z" fill="url(#gradCrisis)" />
+                                            
+                                            <circle cx="220" cy="110" r="6" fill="#fff" stroke="#dc2626" stroke-width="3" />
+                                            <line x1="220" y1="110" x2="220" y2="200" stroke="#dc2626" stroke-width="1" stroke-dasharray="4 2" />
+                                        </svg>
+                                        
+                                        <div class="absolute top-[25%] left-[55%] transform -translate-x-1/2 bg-red-600 text-white px-3 py-2 rounded-lg shadow-lg text-center animate-pulse z-10">
+                                            <p class="text-[10px] font-bold opacity-80 mb-0.5">2030 Prediction</p>
+                                            <p class="text-xl md:text-2xl font-black leading-none">-${slide.dataPoint}</p>
+                                        </div>
+                                        
+                                        <div class="absolute bottom-0 left-0 text-xs text-slate-400 font-bold">Now</div>
+                                        <div class="absolute bottom-0 left-[55%] transform -translate-x-1/2 text-xs text-red-500 font-bold">2030</div>
+                                        <div class="absolute bottom-0 right-0 text-xs text-slate-400 font-bold">2040</div>
+                                    </div>
+                                    
+                                    <p class="text-[10px] text-slate-400 text-right mt-2">Source: ${slide.dataSource}</p>
+                                </div>
+
+                                <div class="flex-1 flex flex-col gap-4 justify-center">
+                                    <div class="bg-slate-50 border-l-4 border-slate-400 p-4 rounded-r-xl">
+                                        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">The Implication</p>
+                                        <p class="text-slate-700 font-medium leading-relaxed text-lg">
+                                            ${slide.implication}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-red-50 border-l-4 border-red-600 p-5 rounded-r-xl shadow-md">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <i data-lucide="flame" class="text-red-600 w-5 h-5"></i>
+                                            <p class="text-red-600 text-sm font-bold uppercase tracking-widest">Model Collapse</p>
+                                        </div>
+                                        <p class="text-slate-800 font-bold leading-relaxed text-lg">
+                                            ${slide.crisis}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'chapter-title':
+                    return `
+                        <div class="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-8 relative overflow-hidden text-center slide-enter shadow-2xl rounded-2xl">
+                            <div class="absolute inset-0 bg-[linear-gradient(45deg,#0f172a_25%,#1e293b_25%,#1e293b_50%,#0f172a_50%,#0f172a_75%,#1e293b_75%,#1e293b_100%)] bg-[length:40px_40px] opacity-20"></div>
+                            <div class="absolute w-[600px] h-[600px] bg-red-600/10 rounded-full blur-[120px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+                            
+                            <div class="relative z-10 max-w-6xl">
+                                <p class="text-red-500 font-bold tracking-[0.3em] mb-6 text-xl md:text-2xl uppercase animate-pulse">
+                                    ${slide.section}
+                                </p>
+                                
+                                <h1 class="text-5xl md:text-7xl font-black leading-tight mb-10 tracking-tight text-white drop-shadow-lg">
+                                    ${slide.title.replace('捨てなければならない', '<span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-600">捨てなければならない</span>')}
+                                </h1>
+                                
+                                <div class="w-32 h-1 bg-slate-700 mx-auto mb-10"></div>
+                                
+                                <p class="text-2xl md:text-4xl text-slate-300 font-serif font-light leading-normal">
+                                    ${slide.subtitle}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+
+                case 'graph-line':
+                    const gridLines = [...Array(5)].map((_, i) => 
+                        `<div class="absolute w-full h-px bg-slate-200" style="top: ${i * 20}%; left: 0;"></div>`
+                    ).join('');
+                    
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full justify-center">
+                            <h3 class="text-xl text-sky-700 mb-4 font-medium bg-sky-50 inline-block px-4 py-2 rounded-lg self-start">${slide.subtitle}</h3>
+                            <div class="flex-1 flex flex-col relative w-full border-l-4 border-b-4 border-slate-300 mb-6 bg-slate-50/50 rounded-tr-xl p-4 min-h-[250px]">
+                                ${gridLines}
+                                <div class="relative flex-1 w-full h-full">
+                                    <svg class="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
+                                        <defs>
+                                            <linearGradient id="gradient-line" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.2" />
+                                                <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                        <polygon points="0,50 150,60 300,80 450,120 600,200 600,250 0,250" fill="url(#gradient-line)" />
+                                        <polyline points="0,50 150,60 300,80 450,120 600,200" fill="none" stroke="#0ea5e9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                                        
+                                        <circle cx="0" cy="50" r="6" fill="#fff" stroke="#0ea5e9" stroke-width="3" />
+                                        <text x="10" y="45" fill="#64748b" font-size="14" font-weight="bold">6,868万人</text>
+
+                                        <circle cx="300" cy="80" r="6" fill="#fff" stroke="#0ea5e9" stroke-width="3" />
+                                        <text x="310" y="75" fill="#64748b" font-size="14" font-weight="bold">6,600万人</text>
+                                        
+                                        <circle cx="450" cy="120" r="8" fill="#fff" stroke="#ef4444" stroke-width="4" />
+                                        <text x="460" y="110" fill="#ef4444" font-size="16" font-weight="bold">6,440万人</text>
+
+                                        <circle cx="600" cy="200" r="6" fill="#fff" stroke="#ef4444" stroke-width="3" />
+                                        <text x="520" y="220" fill="#ef4444" font-size="14" font-weight="bold">5,500万人</text>
+                                    </svg>
+                                    
+                                    <div class="absolute bottom-[-30px] w-full flex justify-between text-slate-500 font-bold text-sm">
+                                        <span>2020年</span>
+                                        <span class="pl-8">2025年</span>
+                                        <span>2030年</span>
+                                        <span>2040年</span>
+                                    </div>
+                                </div>
+
+                                <div class="absolute bottom-10 right-10 bg-white p-4 shadow-xl rounded-xl border border-red-100 z-10">
+                                    <div class="text-red-500 font-bold text-xs mb-1">2030 PREDICTION</div>
+                                    <p class="text-3xl font-bold text-slate-800 whitespace-nowrap">644<span class="text-lg text-slate-500 ml-1">万人不足</span></p>
+                                </div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border-l-4 border-slate-800 shadow-md">
+                                <p class="text-lg text-slate-700 leading-relaxed font-medium whitespace-pre-line">${slide.insight}</p>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'graph-bar':
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full justify-center relative">
+                            <div class="absolute top-0 right-0 bg-slate-800 text-white px-4 py-2 rounded-bl-xl rounded-tr-xl font-bold text-sm shadow-md">
+                                ${slide.chartTitle}
+                            </div>
+
+                            <h3 class="text-xl text-slate-500 mb-8 font-medium">${slide.subtitle}</h3>
+                            <div class="flex flex-col justify-center gap-8 w-full max-w-4xl mx-auto mb-12">
+                                <div class="flex items-center group">
+                                    <div class="w-32 text-xl text-slate-500 font-bold text-right mr-6 flex-shrink-0">事務職</div>
+                                    <div class="flex-1 flex items-center">
+                                        <div class="w-[13%] bg-slate-200 h-12 rounded-r-xl relative group-hover:bg-slate-300 transition-colors flex items-center">
+                                            <span class="absolute left-full ml-4 text-2xl font-bold text-slate-500 whitespace-nowrap">0.3<span class="text-lg">倍</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center group">
+                                    <div class="w-32 text-2xl font-bold text-sky-700 text-right mr-6 flex-shrink-0">営業職</div>
+                                    <div class="flex-1 flex items-center">
+                                        <div class="w-full bg-sky-500 h-20 rounded-r-xl relative shadow-xl shadow-sky-200 group-hover:bg-sky-600 transition-colors bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')] flex items-center">
+                                            <div class="absolute top-0 left-0 w-2 h-full bg-white/30"></div>
+                                            <span class="absolute left-full ml-4 text-5xl font-bold text-sky-600 whitespace-nowrap">2.31<span class="text-2xl">倍</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-red-50 border border-red-100 p-6 rounded-2xl shadow-inner">
+                                <div class="flex items-start gap-3">
+                                    <i data-lucide="alert-triangle" class="text-red-500 flex-shrink-0 w-6 h-6 mt-1"></i>
+                                    <p class="text-red-800 text-lg font-bold leading-relaxed whitespace-pre-line">${slide.insight}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'iceberg':
+                    const pointsHtml = slide.points.map((pt, i) => `
+                        <div class="mb-4 w-full bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/20">
+                            <h4 class="text-lg font-bold mb-1 flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="text-yellow-400 w-5 h-5"></i>
+                                ${pt.title}
+                            </h4>
+                            <p class="text-sky-100 text-sm leading-relaxed opacity-90">${pt.desc}</p>
+                        </div>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <h3 class="text-xl text-slate-500 mb-4">${slide.subtitle}</h3>
+                        <div class="relative w-full flex-1 min-h-[350px] flex justify-center items-center rounded-3xl border border-slate-100 overflow-visible mt-4 mb-4">
+                            <div class="absolute inset-0 bg-gradient-to-b from-sky-50 to-blue-50 z-0 rounded-3xl overflow-hidden"></div>
+                            
+                            <div class="absolute top-1/3 left-0 w-full h-[2px] bg-sky-400 z-20 border-t border-dashed border-sky-600">
+                                <span class="absolute right-4 -top-8 text-sky-600 font-bold text-sm md:text-base">表面 (可視)</span>
+                                <span class="absolute right-4 top-2 text-blue-800 font-bold text-sm md:text-base">水面下 (不可視)</span>
+                            </div>
+
+                            <div class="absolute top-[5%] z-10">
+                                <div class="bg-white px-6 py-4 rounded-xl shadow-lg text-center border-2 border-slate-100">
+                                    <span class="text-slate-600 font-bold text-xl">給与・賞与</span>
+                                </div>
+                            </div>
+
+                            <div class="absolute top-[34%] w-4/5 max-w-xl bg-gradient-to-b from-sky-600 to-blue-800 rounded-b-[4rem] p-6 text-white shadow-2xl z-10 flex flex-col items-center">
+                                ${pointsHtml}
+                            </div>
+                        </div>
+                    `, slide);
+                
+                case 'cost-structure':
+                    const visualStack = slide.visualPoints.map((vp, i) => `
+                        <div class="w-full ${vp.height} ${vp.color} rounded-lg shadow-md mb-2 flex items-center justify-center text-white font-bold relative group transform hover:scale-105 transition-transform ${i===0 ? 'z-20' : 'z-0'}">
+                            ${vp.label}
+                            ${i===0 ? '<div class="absolute -right-4 -top-4 text-red-500 animate-bounce"><i data-lucide="alert-octagon" class="w-8 h-8 bg-white rounded-full"></i></div>' : ''}
+                        </div>
+                    `).join('');
+
+                    const detailsList = slide.details.map(detail => `
+                        <div class="mb-6">
+                            <h4 class="text-lg font-bold text-slate-700 mb-1 border-l-4 border-sky-500 pl-3">${detail.title}</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">${detail.desc}</p>
+                        </div>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <h3 class="text-xl text-slate-500 mb-6">${slide.subtitle}</h3>
+                        <div class="flex flex-col md:flex-row h-full gap-8">
+                            <div class="flex-1 flex flex-col justify-end items-center bg-slate-50 rounded-2xl p-8 border border-slate-200">
+                                <div class="w-3/4 max-w-sm flex flex-col-reverse">
+                                    ${visualStack}
+                                </div>
+                                <div class="mt-4 text-center text-slate-400 text-sm font-bold">コストの積み上げ構造</div>
+                            </div>
+
+                            <div class="flex-1 flex flex-col justify-center">
+                                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                                    ${detailsList}
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+                    
+                case 'comparison':
+                    const rows = slide.labels.map((label, i) => `
+                        <tr class="border-b border-slate-200 last:border-0">
+                            <td class="p-4 font-bold text-slate-500 w-1/4">${label}</td>
+                            <td class="p-4 text-slate-600 w-1/3 bg-slate-50">
+                                <div class="flex items-center">
+                                    <i data-lucide="x" class="text-red-400 w-4 h-4 mr-2"></i>
+                                    ${slide.left.items[i]}
+                                </div>
+                            </td>
+                            <td class="p-4 text-sky-700 font-bold w-1/3 bg-sky-50">
+                                <div class="flex items-center">
+                                    <i data-lucide="check-circle" class="text-sky-500 w-4 h-4 mr-2"></i>
+                                    ${slide.right.items[i]}
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <div class="relative h-full flex flex-col">
+                            <div class="absolute top-0 right-0 opacity-20 z-0 flex items-center gap-4">
+                                <i data-lucide="user" class="w-24 h-24 text-slate-600"></i>
+                                <span class="text-4xl font-bold text-slate-400">VS</span>
+                                <i data-lucide="bot" class="w-24 h-24 text-sky-600"></i>
+                            </div>
+
+                            <div class="z-10 mt-4">
+                                <h3 class="text-xl text-slate-500 mb-6">${slide.subtitle}</h3>
+                                
+                                <div class="w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-8">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 text-slate-600 text-sm uppercase tracking-wider">
+                                                <th class="p-4 font-medium">項目</th>
+                                                <th class="p-4 font-bold text-slate-700">${slide.left.title}</th>
+                                                <th class="p-4 font-bold text-sky-700 bg-sky-100">${slide.right.title}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${rows}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="bg-slate-800 text-white p-6 rounded-xl shadow-xl flex items-start gap-4">
+                                    <i data-lucide="zap" class="text-yellow-400 w-8 h-8 flex-shrink-0 mt-1"></i>
+                                    <div>
+                                        <p class="text-lg font-bold leading-relaxed">
+                                            ${slide.action}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'legacy-limits':
+                    const points = slide.points.map((pt, i) => `
+                        <div class="bg-white border-l-8 border-red-500 shadow-xl p-6 rounded-r-xl w-full flex items-start gap-4 hover:translate-x-2 transition-transform">
+                            <div class="bg-red-100 p-3 rounded-full flex-shrink-0 mt-1">
+                                ${i === 0 ? '<i data-lucide="hammer" class="text-red-500 w-6 h-6"></i>' : 
+                                  i === 1 ? '<i data-lucide="battery-warning" class="text-red-500 w-6 h-6"></i>' : 
+                                  '<i data-lucide="bug" class="text-red-500 w-6 h-6"></i>'}
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold text-red-600 mb-1">${pt.title}</h4>
+                                <p class="text-lg text-slate-600 leading-snug font-medium">${pt.desc}</p>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full relative z-10">
+                            <div class="mb-8 text-center">
+                                <h3 class="text-2xl font-bold text-slate-500 mb-2">${slide.subtitle}</h3>
+                                <div class="inline-block bg-red-600 text-white font-black text-3xl px-6 py-3 rounded-full shadow-lg transform rotate-[-2deg] border-4 border-white">
+                                    ${slide.impactText}
+                                </div>
+                            </div>
+                            
+                            <div class="absolute inset-0 grid grid-cols-12 gap-2 opacity-30 pointer-events-none -z-10">
+                                ${[...Array(96)].map((_, i) => `<div class="w-3 h-3 rounded-full bg-slate-200"></div>`).join('')}
+                            </div>
+
+                            <div class="w-full max-w-5xl mx-auto space-y-6 flex-1 flex flex-col justify-center">
+                                ${points}
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'prediction-cards':
+                    const cards = slide.cards.map((card, i) => `
+                        <div class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-xl hover:shadow-lg transition-shadow flex flex-col">
+                            <div class="text-center mb-3">
+                                <i data-lucide="${i===0 ? 'alert-triangle' : i===1 ? 'shield-check' : 'lightbulb'}" class="${i===0 ? 'text-red-500' : i===1 ? 'text-blue-500' : 'text-yellow-500'} w-8 h-8 mx-auto"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-700 mb-2 text-center border-b pb-2 border-slate-200">${card.title}</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed flex-grow whitespace-pre-line">${card.desc}</p>
+                        </div>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-xl text-slate-500 mb-4">${slide.subtitle}</h3>
+                            
+                            <div class="flex-1 bg-white border border-slate-200 rounded-2xl p-4 shadow-inner mb-6 relative overflow-hidden">
+                                <div class="absolute top-2 left-4 text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">Prediction</div>
+                                <h4 class="text-center font-bold text-slate-600 mb-2 text-sm">${slide.graphLabel}</h4>
+                                <div class="w-full h-full relative" style="min-height: 180px;">
+                                    <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                                        <line x1="0" y1="90" x2="100" y2="90" stroke="#e2e8f0" stroke-width="0.5" />
+                                        <line x1="0" y1="50" x2="100" y2="50" stroke="#e2e8f0" stroke-width="0.5" />
+                                        
+                                        <path d="M 0 90 Q 50 85 100 10" fill="none" stroke="#ef4444" stroke-width="1.5" />
+                                        <polygon points="0,90 50,85 100,10 100,90" fill="url(#gradRed)" opacity="0.2" />
+                                        
+                                        <defs>
+                                            <linearGradient id="gradRed" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+                                                <stop offset="100%" style="stop-color:#ef4444;stop-opacity:0" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    
+                                    <div class="absolute bottom-4 left-6 text-xs text-slate-500 font-bold bg-white/90 px-2 py-1 rounded shadow-sm border border-slate-100">Now</div>
+                                    <div class="absolute bottom-4 right-6 text-xs text-red-600 font-bold bg-white/90 px-2 py-1 rounded shadow-sm border border-red-100">2025 (Commoditization)</div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 h-auto min-h-[180px]">
+                                ${cards}
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'insight-structure':
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-3xl font-bold text-sky-600 mb-6 text-center shrink-0">${slide.subtitle}</h3>
+                            
+                            <div class="flex-1 grid grid-cols-2 gap-8 items-stretch p-2">
+                                
+                                <div class="flex flex-col justify-center gap-4 bg-slate-50 rounded-3xl border border-slate-200 p-6 relative">
+                                    
+                                    <div class="flex items-center gap-6 bg-slate-200/50 p-4 rounded-2xl border border-slate-300 shadow-inner">
+                                        <div class="grid grid-cols-4 gap-1 w-24 shrink-0 p-2 bg-white/50 rounded-xl border border-slate-300">
+                                            ${[...Array(12)].map((_, i) => 
+                                                `<i data-lucide="user" class="w-4 h-4 text-slate-400"></i>`
+                                            ).join('')}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-lg font-bold text-slate-600 leading-tight mb-1">Mass Marketing</p>
+                                            <p class="text-sm text-slate-500 font-bold bg-white inline-block px-2 py-1 rounded border border-slate-200">数打ちゃ当たる</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-center text-slate-300">
+                                        <i data-lucide="arrow-down" class="w-8 h-8"></i>
+                                    </div>
+
+                                    <div class="flex items-center gap-6 bg-white p-4 rounded-2xl border-2 border-sky-400 shadow-lg relative overflow-hidden">
+                                        <div class="absolute right-0 top-0 w-24 h-full bg-gradient-to-l from-sky-50 to-transparent pointer-events-none"></div>
+                                        
+                                        <div class="relative w-24 h-24 flex items-center justify-center bg-sky-50 rounded-xl shrink-0 border border-sky-200">
+                                            <i data-lucide="crosshair" class="w-20 h-20 text-sky-500 absolute opacity-20"></i>
+                                            <i data-lucide="user" class="w-10 h-10 text-sky-700 relative z-10"></i>
+                                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
+                                        </div>
+                                        
+                                        <div class="flex-1 relative z-10">
+                                            <p class="text-xl font-bold text-sky-700 leading-tight mb-1">Insight Sales</p>
+                                            <p class="text-base text-white font-bold bg-sky-500 inline-block px-3 py-1 rounded-lg shadow-sm">One-to-One</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col justify-center gap-5">
+                                    
+                                    <div class="bg-white p-5 rounded-2xl border-l-8 border-slate-400 shadow-sm">
+                                        <span class="text-xs font-bold text-slate-400 uppercase block mb-1">Definition</span>
+                                        <p class="text-lg text-slate-700 font-medium leading-relaxed">
+                                            ${slide.definition}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-white border-l-8 border-sky-500 p-5 rounded-2xl shadow-sm">
+                                        <span class="text-xs font-bold text-sky-500 uppercase block mb-2">The Shift</span>
+                                        <p class="text-slate-400 text-sm mb-2 line-through decoration-slate-400">${slide.shift.push}</p>
+                                        <p class="text-sky-800 text-lg font-bold leading-snug bg-sky-50/50 p-3 rounded-lg border border-sky-100">
+                                            ${slide.shift.pull}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-red-50 border-l-8 border-red-500 p-5 rounded-2xl shadow-md flex items-center">
+                                        <p class="text-red-700 font-bold text-lg leading-snug">
+                                            <i data-lucide="alert-circle" class="inline-block w-6 h-6 mr-2 -mt-1 flex-shrink-0"></i>
+                                            <span>${slide.why}</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'big-data-architecture':
+                    return SlideWrapper(`
+                        <div class="w-full h-full relative bg-slate-50 rounded-3xl border-[6px] border-sky-100 overflow-hidden flex flex-col p-5 md:p-8 group">
+                            
+                            <div class="absolute inset-0 bg-[radial-gradient(#e0f2fe_1px,transparent_1px)] [background-size:24px_24px] opacity-50"></div>
+                            
+                            <div class="absolute top-0 right-0 bg-[#4285F4] text-white px-5 py-2 rounded-bl-2xl shadow-sm z-20 flex items-center gap-2">
+                                <i data-lucide="database" class="w-5 h-5"></i>
+                                <span class="font-bold tracking-wider text-sm">Powered by BigQuery</span>
+                            </div>
+
+                            <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 z-10 w-full">
+                                
+                                <div class="flex flex-col gap-4 items-stretch justify-center w-full md:w-[48%]">
+                                    
+                                    <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-slate-600 flex gap-4 hover:scale-[1.02] transition-transform relative overflow-hidden">
+                                        <div class="bg-slate-100 p-3 rounded-full text-slate-600 h-fit shrink-0">
+                                            <i data-lucide="building-2" class="w-8 h-8"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-baseline gap-2 mb-2">
+                                                <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">${slide.macroTitle}</p>
+                                                <p class="text-3xl md:text-4xl font-black text-slate-800 leading-none">${slide.macroCount}</p>
+                                            </div>
+                                            <p class="text-slate-700 text-sm leading-relaxed">${slide.macroDesc}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-slate-300 font-black text-3xl text-center py-0 leading-none">×</div>
+
+                                    <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-sky-500 flex gap-4 hover:scale-[1.02] transition-transform relative overflow-hidden">
+                                        <div class="bg-sky-100 p-3 rounded-full text-sky-600 h-fit shrink-0">
+                                            <i data-lucide="file-check" class="w-8 h-8"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-baseline gap-2 mb-2">
+                                                <p class="text-sky-600 text-sm font-bold uppercase tracking-wider">${slide.microTitle}</p>
+                                                <p class="text-3xl md:text-4xl font-black text-slate-800 leading-none">${slide.microCount}</p>
+                                            </div>
+                                            <p class="text-slate-700 text-sm leading-relaxed">${slide.microDesc}</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="flex flex-col items-center justify-center shrink-0">
+                                    <i data-lucide="arrow-right" class="w-10 h-10 text-slate-300 hidden md:block animate-pulse"></i>
+                                    <i data-lucide="arrow-down" class="w-10 h-10 text-slate-300 md:hidden animate-pulse"></i>
+                                </div>
+
+                                <div class="relative w-full md:w-[42%] flex flex-col h-full justify-center">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-3xl blur opacity-20 animate-pulse"></div>
+                                    <div class="relative bg-white p-8 rounded-3xl shadow-xl border border-slate-100 flex flex-col items-center text-center h-full justify-center">
+                                        <div class="mb-4 bg-gradient-to-br from-yellow-400 to-orange-500 text-white p-4 rounded-full shadow-lg">
+                                            <i data-lucide="target" class="w-10 h-10"></i>
+                                        </div>
+                                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 mb-2 leading-tight">${slide.outputTitle}</h3>
+                                        <p class="text-sky-600 font-bold text-xl mb-4">（${slide.outputSub}）</p>
+                                        
+                                        <div class="w-full h-px bg-slate-100 mb-4"></div>
+                                        
+                                        <p class="text-slate-700 font-bold text-base leading-relaxed">
+                                            ${slide.outputDesc}
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="mt-6 bg-sky-50/70 rounded-xl p-4 border border-sky-100 z-10 text-center md:text-left shadow-sm">
+                                <p class="text-slate-600 text-sm leading-relaxed font-medium">
+                                    <i data-lucide="cpu" class="inline-block w-4 h-4 text-sky-500 mr-2 align-text-bottom"></i>
+                                    ${slide.processDesc}
+                                </p>
+                            </div>
+
+                        </div>
+                    `, slide);
+                
+                case 'comparison-list':
+                    const insItems = slide.insight.items.map(item => `
+                        <div class="flex items-start gap-3 bg-white/10 p-3 rounded-lg border border-white/20">
+                            <i data-lucide="check" class="text-green-400 w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <span class="text-xs text-sky-200 font-bold uppercase block">${item.label}</span>
+                                <span class="text-white text-sm font-medium">${item.value}</span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-2xl text-slate-500 mb-8 font-light">${slide.subtitle}</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
+                                <div class="bg-slate-100 rounded-2xl p-8 border-2 border-slate-200 flex flex-col opacity-70">
+                                    <div class="flex items-center gap-3 mb-6 border-b border-slate-300 pb-4">
+                                        <div class="bg-slate-300 p-2 rounded-lg"><i data-lucide="list" class="text-slate-600 w-6 h-6"></i></div>
+                                        <h4 class="text-xl font-bold text-slate-600">${slide.traditional.title}</h4>
+                                    </div>
+                                    <p class="text-lg text-slate-500 leading-relaxed mb-4">${slide.traditional.desc}</p>
+                                    <div class="mt-auto bg-slate-200 text-slate-500 p-4 rounded-xl text-center font-bold text-sm">
+                                        競合と同じリスト
+                                    </div>
+                                </div>
+
+                                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 border-2 border-sky-500 shadow-2xl flex flex-col relative overflow-hidden">
+                                    <div class="absolute top-0 right-0 w-32 h-32 bg-sky-500 blur-[60px] opacity-20"></div>
+                                    
+                                    <div class="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4 relative z-10">
+                                        <div class="bg-sky-600 p-2 rounded-lg"><i data-lucide="sparkles" class="text-white w-6 h-6"></i></div>
+                                        <h4 class="text-xl font-bold text-white">${slide.insight.title}</h4>
+                                    </div>
+                                    
+                                    <div class="space-y-3 relative z-10 flex-1">
+                                        ${insItems}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-2xl shadow-lg flex items-center justify-center gap-4 transform hover:scale-[1.02] transition-transform">
+                                <i data-lucide="trending-up" class="w-8 h-8 text-green-200"></i>
+                                <p class="text-2xl font-bold">${slide.result}</p>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'script-generation':
+                    return SlideWrapper(`
+                        <div class="w-full h-full relative p-6 md:p-10 bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
+                            
+                            <div class="absolute top-0 right-0 w-2/3 h-2/3 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/5 via-transparent to-transparent pointer-events-none"></div>
+
+                            <div class="absolute top-6 right-6 z-0 md:scale-[0.85] origin-top-right pointer-events-none hidden md:block">
+                                <div class="relative">
+                                    <div class="absolute -left-14 top-2 z-20 w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+                                        <i data-lucide="sparkles" class="w-8 h-8 text-white"></i>
+                                    </div>
+                                    
+                                    <div class="relative w-80 bg-white rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.1)] p-6 border border-slate-100 transform rotate-3 z-10 font-mono text-xs leading-relaxed text-slate-600">
+                                        <div class="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                                            <div class="text-[10px] text-slate-400 font-bold ml-auto">winning_script.txt</div>
+                                        </div>
+                                        
+                                        <div class="space-y-1.5">
+                                            <p class="text-slate-400">// AI Process Initialized...</p>
+                                            
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-blue-500">❯</span>
+                                                <p class="typewriter" style="animation-delay: 0.5s;">Analyzing Target's Pain Points...</p>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-blue-500">❯</span>
+                                                <p class="typewriter" style="animation-delay: 2.2s;">Integrating with USP data...</p>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-2 mt-3">
+                                                <span class="text-indigo-600">❯❯</span>
+                                                <p class="typewriter-cursor text-indigo-700 font-bold bg-indigo-50 px-1" style="animation-delay: 4s;">Generating Winning Script Pattern...</p>
+                                            </div>
+
+                                            <p class="text-green-600 font-bold mt-4 animate-pulse opacity-0" style="animation: pulse 2s infinite 6.5s forwards;">[✓] Script Generation Complete.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-right text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-3 mr-4 animate-pulse">AI Typing...</p>
+                                </div>
+                            </div>
+
+                            <div class="relative z-10 flex flex-col h-full justify-between gap-6 md:gap-8 px-2">
+                                
+                                <div class="w-full md:w-[70%]">
+                                    <h2 class="text-2xl md:text-4xl font-black text-slate-800 leading-tight tracking-tight mb-3">
+                                        ${slide.subtitle}
+                                    </h2>
+                                    <div class="h-1 w-24 bg-indigo-600 rounded-full"></div>
+                                </div>
+
+                                <div class="w-full">
+                                    <h4 class="text-indigo-600 font-bold text-sm uppercase tracking-wide mb-3 flex items-center gap-2">
+                                        <i data-lucide="scan-search" class="w-5 h-5"></i> Scenario Generation
+                                    </h4>
+                                    <p class="text-slate-700 text-lg md:text-xl leading-relaxed font-medium pl-1 border-l-4 border-slate-200 ml-1">
+                                        <span class="pl-3 block">
+                                            ${slide.scenario.replace('Scenario Generation:', '')}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <div class="w-full">
+                                    <div class="bg-indigo-50/40 p-5 rounded-2xl border border-indigo-100/50 text-center">
+                                        <div class="flex flex-wrap items-center justify-center gap-y-3 text-lg md:text-xl font-bold text-slate-800 leading-relaxed">
+                                            ${slide.formula
+                                                .replace(/\[Winning Script\]/g, '<span class="inline-block bg-gradient-to-r from-red-500 to-orange-600 text-white px-4 py-1.5 rounded-xl shadow-md mx-2 transform scale-105">Winning Script</span>')
+                                                .replace(/＝/g, '<div class="basis-full h-2"></div><span class="text-slate-400 text-2xl mx-2">＝</span>')
+                                                .replace(/\[/g, '<span class="inline-block bg-white text-indigo-700 px-3 py-1 rounded-lg border border-indigo-100 mx-1 shadow-sm">')
+                                                .replace(/\]/g, '</span>')
+                                                .replace(/×/g, '<span class="text-slate-400 mx-2">×</span>')
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-blue-600 p-5 rounded-2xl text-white shadow-lg relative overflow-hidden group">
+                                    <div class="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
+                                    <div class="flex items-center gap-5 relative z-10">
+                                        <div class="bg-white/20 p-3 rounded-full shrink-0">
+                                            <i data-lucide="check-circle-2" class="w-8 h-8 text-white"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-xs opacity-80 uppercase mb-1 tracking-wider">Benefit</p>
+                                            <p class="font-bold text-xl md:text-2xl leading-snug">
+                                                ${slide.benefit.replace('Benefit:', '')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'formula':
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full items-center justify-center">
+                            <h3 class="text-xl text-slate-500 mb-12 font-bold">${slide.subtitle}</h3>
+                            <div class="w-full bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-inner mb-12">
+                                <h4 class="text-3xl font-black text-slate-700 text-center tracking-tight mb-4 border-b pb-4 border-slate-200">${slide.formula}</h4>
+                            </div>
+                            <p class="text-slate-500 text-xl font-medium max-w-3xl text-center leading-relaxed">
+                                <span class="text-sky-500 font-bold">" ${slide.desc} "</span>
+                            </p>
+                        </div>
+                    `, slide);
+
+                case 'big-number':
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full items-center justify-center">
+                            <div class="relative mb-8 w-full flex justify-center">
+                                <span class="text-[12rem] md:text-[14rem] font-black text-slate-100 leading-none select-none absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 scale-150 z-0">70%</span>
+                                <div class="relative z-10 flex flex-col items-center">
+                                    <span class="text-8xl md:text-9xl font-black text-slate-800 tracking-tighter drop-shadow-2xl">70<span class="text-5xl md:text-6xl">%</span></span>
+                                    <div class="bg-red-500 text-white text-lg font-bold px-6 py-2 rounded-full mt-4">失敗率</div>
+                                </div>
+                            </div>
+                            <p class="text-xl font-bold text-red-500 mb-8 border-b-2 border-red-100 pb-2">${slide.subtext}</p>
+                            <div class="bg-white p-6 rounded-2xl border-l-8 border-slate-800 shadow-xl max-w-4xl relative">
+                                <p class="text-xl text-slate-700 whitespace-pre-line leading-relaxed">
+                                    ${slide.content}
+                                </p>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'failure-data':
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full gap-10">
+                            <div class="flex flex-col md:flex-row items-center justify-between gap-10 flex-1">
+                                <div class="relative w-1/3 flex flex-col items-center justify-center">
+                                    <span class="text-[10rem] font-black text-slate-800 tracking-tighter drop-shadow-xl relative z-10">${slide.mainNumber}</span>
+                                    <div class="bg-red-500 text-white text-2xl font-bold px-8 py-3 rounded-full -mt-6 relative z-20">${slide.subMain}</div>
+                                    <div class="absolute inset-0 bg-red-100 rounded-full blur-3xl opacity-30 transform scale-75"></div>
+                                </div>
+
+                                <div class="w-56 h-56 rounded-full bg-slate-800 border-8 border-slate-200 flex items-center justify-center shadow-2xl relative z-10 shrink-0">
+                                    <p class="text-white font-bold text-center leading-relaxed text-2xl whitespace-pre-line">${slide.circleText}</p>
+                                    <div class="absolute -right-4 -top-4 bg-yellow-400 text-slate-900 text-sm font-bold px-3 py-1 rounded-full">POINT</div>
+                                </div>
+
+                                <div class="flex-1 w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col justify-center">
+                                    <h4 class="text-base font-bold text-slate-500 mb-6 border-b pb-3">Statistic Data</h4>
+                                    
+                                    <div class="mb-8">
+                                        <div class="flex justify-between text-base mb-2 font-bold text-slate-700">
+                                            <span>DXプロジェクト失敗率</span>
+                                            <span class="text-red-500">70%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-6 overflow-hidden">
+                                            <div class="bg-red-500 h-6 rounded-full" style="width: 70%"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex justify-between text-base mb-2 font-bold text-slate-700">
+                                            <span>SFA/CRM定着課題あり</span>
+                                            <span class="text-orange-400">80%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-6 overflow-hidden">
+                                            <div class="bg-orange-400 h-6 rounded-full" style="width: 80%"></div>
+                                        </div>
+                                        <p class="text-xs text-slate-400 text-right mt-2">*一般的統計に基づく推計値</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-8">
+                                ${slide.cards.map((card, i) => `
+                                    <div class="bg-white border-t-8 ${i===0 ? 'border-red-400' : i===1 ? 'border-yellow-400' : 'border-blue-400'} p-8 rounded-xl shadow-md hover:-translate-y-1 transition-transform">
+                                        <h4 class="font-bold text-xl text-slate-700 mb-4 flex items-center gap-3">
+                                            <i data-lucide="${i===0 ? 'alert-triangle' : i===1 ? 'trending-up' : 'lightbulb'}" class="w-6 h-6 ${i===0 ? 'text-red-400' : i===1 ? 'text-yellow-400' : 'text-blue-400'}"></i>
+                                            ${card.title}
+                                        </h4>
+                                        <p class="text-lg text-slate-600 leading-relaxed font-medium">${card.desc}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'metrics':
+                    const metricsHtml = slide.metrics.map((m, i) => `
+                        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 flex flex-col items-center justify-center relative group hover:-translate-y-2 transition-transform duration-300 h-full">
+                            <div class="absolute top-0 left-0 w-full h-3 rounded-t-3xl ${i===0 ? 'bg-sky-500' : i===1 ? 'bg-blue-500' : 'bg-indigo-500'}"></div>
+                            <div class="text-5xl md:text-6xl font-black mb-3 ${i===0 ? 'text-sky-600' : i===1 ? 'text-blue-600' : 'text-indigo-600'} tracking-tight whitespace-nowrap">${m.val}</div>
+                            <div class="text-lg md:text-xl text-slate-700 font-bold mb-3">${m.label}</div>
+                            ${m.desc ? `<p class="text-sm text-slate-500 font-medium text-center bg-slate-50 px-3 py-1 rounded-lg w-full leading-snug">${m.desc}</p>` : ''}
+                        </div>
+                    `).join('');
+
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full justify-center">
+                            <h3 class="text-xl md:text-2xl text-slate-500 mb-10 font-medium text-center">${slide.subtitle}</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 flex-1 items-center">
+                                ${metricsHtml}
+                            </div>
+
+                            ${slide.scope ? `
+                                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-2xl shadow-lg flex items-center justify-center border-t-4 border-emerald-400">
+                                    <p class="text-lg font-bold">
+                                        <i data-lucide="building-2" class="inline-block w-6 h-6 mr-2 -mt-1 text-emerald-400"></i>
+                                        ${slide.scope}
+                                    </p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `, slide);
+
+                case 'comparison-arrow':
+                    return SlideWrapper(`
+                         <h3 class="text-xl text-slate-500 mb-12">${slide.subtitle}</h3>
+                         <div class="flex items-center justify-center gap-8 h-full pb-10">
+                            <div class="bg-slate-50 p-10 rounded-2xl border border-slate-200 flex-1 h-full flex flex-col justify-center items-center opacity-60">
+                                <h4 class="text-2xl font-bold text-slate-600 mb-4">${slide.left.title}</h4>
+                                <p class="text-lg text-slate-500 whitespace-pre-line text-center">${slide.left.desc}</p>
+                            </div>
+                            <i data-lucide="arrow-right" class="w-12 h-12 text-slate-300"></i>
+                            <div class="bg-sky-600 p-10 rounded-2xl border border-sky-500 flex-1 h-full flex flex-col justify-center items-center text-white shadow-xl">
+                                <h4 class="text-2xl font-bold mb-4">${slide.right.title}</h4>
+                                <p class="text-lg text-sky-100 whitespace-pre-line text-center font-bold">${slide.right.desc}</p>
+                            </div>
+                         </div>
+                    `, slide);
+
+                case 'cycle':
+                      return SlideWrapper(`
+                        <h3 class="text-2xl text-slate-500 mb-6 font-light text-center">${slide.subtitle}</h3>
+                        
+                        <div class="flex flex-col gap-6 h-full pb-2">
+                            <div class="flex flex-col md:flex-row gap-6 items-stretch justify-center flex-1">
+                                <div class="bg-blue-50 border-2 border-blue-200 rounded-3xl p-6 flex-1 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden">
+                                    <div class="absolute top-0 right-0 p-12 bg-blue-100 rounded-bl-full opacity-50 -mr-6 -mt-6 pointer-events-none"></div>
+                                    <div class="bg-white p-4 rounded-full mb-4 shadow-md relative z-10 border border-blue-100">
+                                        <i data-lucide="bot" class="w-10 h-10 text-blue-600"></i>
+                                    </div>
+                                    <h4 class="text-xl font-bold text-blue-900 mb-3">${slide.left.label}</h4>
+                                    <p class="text-blue-800 text-base leading-relaxed whitespace-pre-line">${slide.left.desc}</p>
+                                </div>
+
+                                <div class="flex items-center justify-center">
+                                    <div class="bg-white p-3 rounded-full shadow-lg border border-slate-100 z-10">
+                                        <i data-lucide="plus" class="w-6 h-6 text-slate-400"></i>
+                                    </div>
+                                </div>
+
+                                <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-6 flex-1 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden">
+                                    <div class="absolute top-0 left-0 p-12 bg-rose-100 rounded-br-full opacity-50 -ml-6 -mt-6 pointer-events-none"></div>
+                                    <div class="bg-white p-4 rounded-full mb-4 shadow-md relative z-10 border border-rose-100">
+                                        <i data-lucide="heart" class="w-10 h-10 text-rose-600"></i>
+                                    </div>
+                                    <h4 class="text-xl font-bold text-rose-900 mb-3">${slide.right.label}</h4>
+                                    <p class="text-rose-800 text-base leading-relaxed whitespace-pre-line">${slide.right.desc}</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-800 text-white p-6 rounded-2xl shadow-lg text-center border-t-4 border-yellow-400 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-white/5 pointer-events-none"></div>
+                                <p class="text-lg md:text-xl font-bold leading-relaxed relative z-10">
+                                    <i data-lucide="lightbulb" class="inline-block w-6 h-6 text-yellow-400 mr-2 -mt-1"></i>
+                                    ${slide.strategy}
+                                </p>
+                            </div>
+                        </div>
+                      `, slide);
+
+                case 'flow':
+                    return SlideWrapper(`
+                        <h3 class="text-xl md:text-2xl text-slate-500 mb-6 font-medium text-center">${slide.subtitle}</h3>
+                        
+                        <div class="flex flex-col h-full gap-8">
+                            <div class="bg-sky-50 border-l-8 border-sky-500 p-6 rounded-r-xl shadow-sm">
+                                <p class="text-xl text-slate-700 font-medium leading-relaxed">
+                                    ${slide.concept}
+                                </p>
+                            </div>
+
+                            <div class="flex-1 flex items-center justify-between relative z-10 w-full px-2 gap-2 md:gap-4">
+                                ${slide.steps.map((step, i) => `
+                                    <div class="flex flex-col items-center relative z-10 flex-1 group">
+                                        <div class="w-20 h-20 md:w-24 md:h-24 bg-white border-4 ${i===2 ? 'border-rose-500 text-rose-500 shadow-rose-200' : 'border-sky-500 text-sky-500 shadow-sky-200'} rounded-full flex items-center justify-center mb-5 shadow-xl relative z-10 transform group-hover:scale-105 transition-transform duration-300">
+                                            ${i === 0 ? '<i data-lucide="brain-circuit" class="w-8 h-8 md:w-10 md:h-10"></i>' : 
+                                              i === 1 ? '<i data-lucide="headset" class="w-8 h-8 md:w-10 md:h-10"></i>' : 
+                                              '<i data-lucide="calendar-check" class="w-8 h-8 md:w-10 md:h-10"></i>'}
+                                            <div class="absolute -top-2 -right-2 w-8 h-8 bg-slate-800 rounded-full text-white font-bold flex items-center justify-center border-2 border-white text-sm">${i+1}</div>
+                                        </div>
+                                        <h4 class="text-base md:text-xl font-bold text-slate-700 text-center leading-snug whitespace-pre-line">${step}</h4>
+                                    </div>
+                                    ${i < slide.steps.length - 1 ? `
+                                        <div class="flex items-center justify-center text-slate-300 -mt-8">
+                                            <i data-lucide="arrow-right" class="w-8 h-8 md:w-12 md:h-12"></i>
+                                        </div>
+                                    ` : ''}
+                                `).join('')}
+                            </div>
+
+                            <div class="bg-slate-800 text-white p-6 rounded-2xl shadow-lg flex items-center gap-5 border-t-4 border-yellow-400">
+                                <div class="bg-yellow-400 p-3 rounded-full text-slate-900 shrink-0">
+                                    <i data-lucide="crown" class="w-6 h-6"></i>
+                                </div>
+                                <p class="text-lg md:text-xl font-bold leading-relaxed">${slide.benefit}</p>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'domain-knowledge':
+                    return SlideWrapper(`
+                        <h3 class="text-xl md:text-2xl text-slate-500 mb-6 font-medium text-center">${slide.subtitle}</h3>
+
+                        <div class="flex flex-col h-full justify-between gap-6">
+                            <div class="bg-slate-100 p-5 rounded-xl border-l-8 border-slate-400 shadow-sm">
+                                <p class="text-lg md:text-xl text-slate-700 font-medium">
+                                    <span class="font-bold text-slate-900 block mb-1 text-sm uppercase tracking-wider">Problem</span>
+                                    ${slide.tuning}
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                                ${slide.teams.map(team => `
+                                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-6 shadow-md flex flex-col relative overflow-hidden group hover:border-slate-300 transition-colors">
+                                        <div class="flex items-center gap-4 mb-4 border-b border-slate-100 pb-3">
+                                            <div class="p-3 rounded-xl ${team.color} text-white shadow-lg transform group-hover:scale-110 transition-transform">
+                                                <i data-lucide="${team.icon}" class="w-8 h-8"></i>
+                                            </div>
+                                            <h4 class="text-2xl font-bold text-slate-800">${team.name}</h4>
+                                        </div>
+                                        <div class="flex-1 flex flex-col justify-center">
+                                            <ul class="space-y-3">
+                                                ${team.items.map(item => 
+                                                    `<li class="flex items-start gap-3 text-slate-700 font-bold text-lg">
+                                                        <i data-lucide="message-circle" class="w-6 h-6 text-slate-400 shrink-0 mt-1"></i>
+                                                        ${item}
+                                                    </li>`
+                                                ).join('')}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-2xl shadow-xl border-t-4 border-sky-500 flex items-center gap-5">
+                                <div class="bg-sky-500/20 p-3 rounded-full border border-sky-400 text-sky-300 shrink-0">
+                                    <i data-lucide="user-cog" class="w-8 h-8"></i>
+                                </div>
+                                <div>
+                                    <p class="text-lg md:text-xl leading-relaxed font-bold">
+                                        ${slide.role}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'growth-loop':
+                    return SlideWrapper(`
+                        <h3 class="text-xl md:text-2xl text-slate-500 mb-8 font-medium text-center">${slide.subtitle}</h3>
+                        
+                        <div class="flex flex-col md:flex-row h-full items-center gap-10">
+                            <div class="flex-1 flex items-center justify-center relative w-full max-w-sm aspect-square">
+                                <div class="absolute inset-0 border-4 border-dashed border-sky-300 rounded-full animate-[spin_20s_linear_infinite]"></div>
+                                <div class="absolute inset-6 border-4 border-dashed border-indigo-300 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
+                                
+                                <div class="bg-gradient-to-br from-sky-500 to-indigo-600 p-8 rounded-full shadow-2xl relative z-10 text-white">
+                                    <i data-lucide="brain-circuit" class="w-16 h-16"></i>
+                                </div>
+
+                                <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 bg-white p-2 rounded-full shadow-md border border-slate-100">
+                                    <i data-lucide="phone-call" class="w-6 h-6 text-slate-400"></i>
+                                </div>
+                                <div class="absolute bottom-0 right-1/4 translate-y-4 bg-white p-2 rounded-full shadow-md border border-slate-100">
+                                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-slate-400"></i>
+                                </div>
+                                <div class="absolute bottom-0 left-1/4 translate-y-4 bg-white p-2 rounded-full shadow-md border border-slate-100">
+                                    <i data-lucide="users" class="w-6 h-6 text-slate-400"></i>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 flex flex-col justify-center gap-6 w-full">
+                                ${slide.mechanisms.map((item, i) => `
+                                    <div class="bg-white border-l-8 ${i===0 ? 'border-sky-500' : i===1 ? 'border-indigo-500' : 'border-purple-500'} p-5 rounded-r-xl shadow-sm hover:shadow-md hover:-translate-x-1 transition-all">
+                                        <h4 class="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                            <i data-lucide="${item.icon}" class="w-6 h-6 ${i===0 ? 'text-sky-500' : i===1 ? 'text-indigo-500' : 'text-purple-500'}"></i>
+                                            ${item.title}
+                                        </h4>
+                                        <p class="text-base text-slate-600 leading-relaxed font-medium">
+                                            ${item.desc}
+                                        </p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'case-study-combined':
+                    // Check title to determine icons/visuals
+                    const isVideo = slide.title.includes('動画');
+                    const isHR = slide.title.includes('人材');
+                    
+                    let icon = 'factory';
+                    let iconColor = 'text-orange-400';
+                    let bgDecor1 = 'settings';
+                    let bgDecor2 = 'settings';
+
+                    if (isVideo) {
+                        icon = 'clapperboard';
+                        iconColor = 'text-pink-500';
+                        bgDecor1 = 'film';
+                        bgDecor2 = 'video';
+                    } else if (isHR) {
+                        icon = 'users-2'; // or briefcase
+                        iconColor = 'text-emerald-500';
+                        bgDecor1 = 'network'; // check if network exists in lucide, otherwise use users
+                        bgDecor2 = 'users';
+                    }
+                    
+                    return SlideWrapper(`
+                        <div class="flex flex-col h-full relative overflow-hidden">
+                            <div class="absolute -top-10 -right-10 text-slate-300 opacity-20 pointer-events-none z-0">
+                                <i data-lucide="${bgDecor1}" class="w-64 h-64 ${isVideo ? 'animate-pulse' : 'animate-[spin_20s_linear_infinite]'}"></i>
+                            </div>
+                            <div class="absolute bottom-10 left-10 text-slate-300 opacity-20 pointer-events-none z-0">
+                                <i data-lucide="${bgDecor2}" class="w-40 h-40 ${isVideo ? 'animate-bounce' : 'animate-[spin_15s_linear_infinite_reverse]'}"></i>
+                            </div>
+
+                            <div class="flex justify-center mb-6 relative z-10">
+                                <div class="bg-slate-800 text-white px-10 py-3 rounded-full shadow-lg flex items-center gap-4 text-2xl font-bold border-2 border-slate-600">
+                                    <i data-lucide="${icon}" class="w-8 h-8 ${iconColor}"></i>
+                                    ${slide.companyInfo}
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row gap-6 h-full items-stretch relative z-10">
+                                <div class="flex-1 bg-white/90 backdrop-blur-sm rounded-2xl p-5 border-l-8 border-red-500 shadow-md flex flex-col">
+                                    <h4 class="text-red-600 font-bold text-center mb-4 uppercase tracking-widest border-b border-red-100 pb-2 flex items-center justify-center gap-2">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                                        ${slide.problem.title}
+                                    </h4>
+                                    <div class="flex-1 flex flex-col gap-3 justify-center">
+                                        ${slide.problem.items.map(item => `
+                                            <div class="bg-red-50 p-4 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
+                                                <span class="text-xs font-bold text-red-500 uppercase block mb-1 flex items-center gap-1">
+                                                    <i data-lucide="x-circle" class="w-3 h-3"></i> ${item.label}
+                                                </span>
+                                                <p class="text-sm text-slate-700 font-medium leading-snug">${item.text}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                                <div class="hidden md:flex items-center justify-center text-slate-400">
+                                    <i data-lucide="arrow-right" class="w-10 h-10"></i>
+                                </div>
+
+                                <div class="flex-[1.3] bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200 shadow-xl flex flex-col relative overflow-hidden">
+                                    <div class="absolute top-0 right-0 w-24 h-24 bg-sky-200 rounded-bl-full opacity-30 pointer-events-none"></div>
+                                    
+                                    <h4 class="text-sky-700 font-bold text-center mb-4 uppercase tracking-widest border-b border-slate-200 pb-2 flex items-center justify-center gap-2">
+                                        <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                                        ${slide.solution.title}
+                                    </h4>
+                                    
+                                    <div class="flex-1 flex flex-col gap-4">
+                                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-sky-500 relative">
+                                            <div class="absolute -top-3 -right-3 bg-sky-500 text-white rounded-full p-1 shadow-sm">
+                                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                            </div>
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i data-lucide="brain-circuit" class="w-5 h-5 text-sky-500"></i>
+                                                <span class="text-sm font-bold text-sky-700">${slide.solution.inference}</span>
+                                            </div>
+                                            <p class="text-base font-bold text-slate-800 leading-snug">
+                                                ${slide.solution.insight}
+                                            </p>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            ${slide.solution.steps.map(step => `
+                                                <div class="flex items-start gap-3 text-sm bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                                                    <span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-xs font-bold shrink-0 mt-0.5">${step.label}</span>
+                                                    <span class="text-slate-600 font-medium">${step.text}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+
+                                        <div class="mt-auto bg-slate-800 text-white p-4 rounded-xl shadow-lg flex items-center gap-4 border-t-4 border-green-500 relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-green-500/10 pointer-events-none"></div>
+                                            <div class="bg-green-500 p-2 rounded-full shrink-0 shadow-lg shadow-green-500/50">
+                                                <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                                            </div>
+                                            <div class="relative z-10">
+                                                <span class="text-xs text-green-400 font-bold uppercase">Result</span>
+                                                <p class="text-lg font-bold leading-tight whitespace-pre-line">${slide.solution.result}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+
+                case 'list-assets':
+                    // Map titles to specific icons
+                    const getAssetIcon = (title) => {
+                        if (title.includes('Persona')) return 'target';
+                        if (title.includes('USP')) return 'gem';
+                        if (title.includes('Script')) return 'scroll-text';
+                        if (title.includes('Workflow')) return 'settings'; // Changed from cogs (not in lucide) to settings
+                        return 'database';
+                    };
+
+                      // Special Dark/Gold Premium Design for Conclusion
+                      return `
+                        <div class="w-full h-full relative overflow-hidden bg-slate-900 text-white flex flex-col p-10 slide-enter rounded-2xl shadow-2xl">
+                            <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-900/30 rounded-full blur-[100px] pointer-events-none"></div>
+                            <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-900/20 rounded-full blur-[80px] pointer-events-none"></div>
+                            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none"></div>
+
+                            <div class="relative z-10 flex justify-between items-start mb-8 border-b border-slate-700 pb-4">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="h-1 w-8 bg-yellow-500 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.8)]"></span>
+                                        <span class="text-yellow-500 font-bold tracking-widest text-sm uppercase glow-sm">${slide.section}</span>
+                                    </div>
+                                    <h2 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">
+                                        ${slide.title}
+                                    </h2>
+                                </div>
+                                <i data-lucide="layers" class="text-slate-700 w-16 h-16 opacity-50"></i>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 mb-8 relative z-10">
+                                ${slide.items.map((item, i) => {
+                                    const icon = getAssetIcon(item.title);
+                                    return `
+                                    <div class="bg-white/5 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-start gap-5 hover:bg-white/10 hover:border-yellow-500/50 transition-all duration-300 group shadow-lg">
+                                        <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 p-3 rounded-xl text-slate-900 shadow-lg shadow-yellow-500/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                            <i data-lucide="${icon}" class="w-8 h-8"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">${item.title}</h4>
+                                            <p class="text-slate-300 text-lg leading-relaxed font-medium">${item.desc}</p>
+                                        </div>
+                                    </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                            
+                            <div class="relative z-10">
+                                <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-8 rounded-2xl text-center border-t-4 border-yellow-500 shadow-2xl relative overflow-hidden group">
+                                    <div class="absolute inset-0 bg-yellow-500/5 group-hover:bg-yellow-500/10 transition-colors"></div>
+                                    <div class="absolute -top-10 -left-10 w-20 h-20 bg-yellow-500 blur-3xl opacity-20"></div>
+                                    
+                                    <p class="text-2xl md:text-3xl text-white font-bold leading-relaxed relative z-10 flex items-center justify-center gap-4">
+                                        <i data-lucide="crown" class="w-10 h-10 text-yellow-500 fill-yellow-500/20"></i>
+                                        ${slide.content}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="absolute bottom-4 right-8 text-slate-600 text-xs font-mono">
+                                Asset Transformation
+                            </div>
+                        </div>
+                      `;
+
+                case 'deliverables':
+                    return `
+                        <div class="w-full h-full relative overflow-hidden bg-slate-900 text-white flex flex-col p-8 md:p-10 slide-enter rounded-2xl shadow-2xl">
+                            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+                            <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[100px] pointer-events-none"></div>
+                            <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-sky-900/20 rounded-full blur-[100px] pointer-events-none"></div>
+
+                            <div class="relative z-10 mb-6 border-b border-white/10 pb-4 flex justify-between items-end">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="h-1 w-8 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)]"></span>
+                                        <span class="text-emerald-500 font-bold tracking-widest text-sm uppercase glow-sm">${slide.section}</span>
+                                    </div>
+                                    <h2 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+                                        ${slide.title}
+                                    </h2>
+                                </div>
+                                <div class="text-right hidden md:block">
+                                    <p class="text-slate-400 text-sm font-mono tracking-wider">OUTPUT FILES</p>
+                                </div>
+                            </div>
+
+                            <div class="relative z-10 bg-gradient-to-r from-emerald-900/40 to-slate-800/40 border border-emerald-500/30 p-6 rounded-2xl mb-8 backdrop-blur-md shadow-lg text-center">
+                                <p class="text-2xl md:text-3xl text-white font-bold tracking-wide leading-relaxed mb-3">
+                                    <i data-lucide="crown" class="inline-block w-8 h-8 mr-2 -mt-1 text-yellow-400 fill-yellow-400/20"></i>
+                                    ${slide.content}
+                                </p>
+                                <p class="text-emerald-400 text-sm font-bold uppercase tracking-widest opacity-90">
+                                    ${slide.subtitle}
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 flex-1">
+                                ${slide.items.map((item, i) => `
+                                    <div class="group relative bg-slate-800/50 border border-white/20 p-6 rounded-2xl hover:bg-slate-800 hover:border-emerald-500/50 transition-all duration-300 flex items-start gap-6 overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1">
+                                        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors"></div>
+                                        
+                                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-900/50 shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                            <i data-lucide="${item.icon}" class="w-8 h-8 text-white"></i>
+                                        </div>
+                                        
+                                        <div class="relative z-10 flex-1">
+                                            <h4 class="text-2xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors tracking-tight">${item.title}</h4>
+                                            <p class="text-slate-300 text-xl leading-relaxed font-bold">${item.desc}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+
+                case 'vision':
+                    return `
+                        <div class="w-full h-full relative overflow-hidden bg-slate-950 text-white flex flex-col items-center justify-center p-4 slide-enter rounded-2xl shadow-2xl">
+                            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black"></div>
+                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[1000px] h-[600px] bg-sky-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+                            <div class="relative z-10 w-full max-w-6xl flex flex-col h-full justify-center items-center text-center gap-4">
+                                
+                                <div class="shrink-0">
+                                    <div class="inline-block px-3 py-0.5 rounded-full border border-slate-700 bg-slate-800/50 mb-2 backdrop-blur-md">
+                                        <p class="text-slate-400 text-[10px] font-bold tracking-[0.2em] uppercase">Our Vision</p>
+                                    </div>
+                                    <h2 class="text-4xl md:text-6xl font-bold leading-tight tracking-tight">
+                                        全国、全ての中小企業を<br>
+                                        <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]">黒字にする。</span>
+                                    </h2>
+                                </div>
+
+                                <div class="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm max-w-4xl w-full shadow-2xl flex flex-col gap-4">
+                                    <p class="text-xl md:text-2xl text-slate-200 font-medium">
+                                        営業リソースが足りない中小企業こそ、AIを使うべきです。
+                                    </p>
+                                    
+                                    <div class="flex flex-col gap-2">
+                                        <div class="text-lg text-slate-400">
+                                            人を雇う<span class="text-red-400 font-bold mx-2 border-b border-red-500/30">リスク（固定費増）</span>を負う前に、
+                                        </div>
+                                        
+                                        <div class="text-slate-600">
+                                            <i data-lucide="arrow-down" class="w-5 h-5 mx-auto"></i>
+                                        </div>
+
+                                        <div class="text-xl md:text-2xl font-bold text-white leading-snug">
+                                            まずは<span class="text-sky-400 mx-2">変動費で導入できるAI</span>と<br>
+                                            私たちのチームを使って、<br>
+                                            <span class="inline-block mt-2 bg-sky-500/20 px-4 py-1 rounded-lg text-sky-100 border border-sky-500/30">「売れる仕組み」を構築してください。</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="shrink-0 mt-2">
+                                    <p class="text-base text-slate-500 mb-1">それが、これからの時代を生き残る唯一の</p>
+                                    <p class="text-4xl md:text-5xl font-black text-yellow-400 tracking-wider filter drop-shadow-[0_0_20px_rgba(250,204,21,0.3)]">
+                                        「生存戦略」です。
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+                    `;
+
+                case 'offer':
+                    return `
+                        <div class="w-full h-full relative overflow-hidden bg-slate-900 text-white flex flex-col items-center justify-center p-6 slide-enter rounded-2xl shadow-2xl">
+                            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                            <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-yellow-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+                            <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                            
+                            <div class="relative z-10 w-full max-w-7xl border border-yellow-500/30 p-8 rounded-3xl bg-slate-800/80 backdrop-blur-xl shadow-2xl flex flex-col gap-6">
+                                
+                                <div class="text-center border-b border-white/10 pb-4 shrink-0">
+                                    <div class="inline-block bg-gradient-to-r from-yellow-500 to-yellow-700 text-slate-900 px-6 py-1 rounded-full text-sm font-bold shadow-lg mb-3">
+                                        SPECIAL OFFER
+                                    </div>
+                                    <h2 class="text-3xl md:text-5xl font-bold leading-tight text-white tracking-tight">
+                                        ${slide.offerTitle}
+                                    </h2>
+                                </div>
+
+                                <div class="bg-white/5 rounded-2xl p-4 text-center border border-white/5 shrink-0">
+                                    <p class="text-lg md:text-xl text-slate-300 leading-relaxed">
+                                        ${slide.process}
+                                    </p>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
+                                    ${slide.items.map(item => `
+                                        <div class="flex items-center gap-4 bg-slate-700/50 p-5 rounded-2xl border border-slate-600 relative overflow-hidden group hover:bg-slate-700 transition-colors">
+                                            <div class="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-yellow-500/10 to-transparent"></div>
+                                            <div class="bg-slate-800 p-3 rounded-xl text-yellow-400 shrink-0 shadow-lg border border-yellow-500/20 group-hover:scale-110 transition-transform">
+                                                <i data-lucide="${item.icon}" class="w-8 h-8"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-yellow-500 text-xs font-bold uppercase tracking-wider mb-1">Deliverable</p>
+                                                <h4 class="font-bold text-2xl text-white leading-tight">${item.title}</h4>
+                                                <p class="text-base text-slate-300 mt-1 leading-snug font-medium">${item.desc}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+
+                                <div class="mt-2 text-center bg-gradient-to-r from-slate-800 to-slate-900 border border-yellow-500 rounded-2xl p-6 shadow-[0_0_25px_rgba(234,179,8,0.2)] shrink-0">
+                                    <div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-8">
+                                        <p class="text-slate-400 text-sm font-bold uppercase tracking-widest">COST</p>
+                                        <p class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 tracking-wider filter drop-shadow-lg">
+                                            ${slide.cost}
+                                        </p>
+                                        <p class="text-yellow-500/90 text-sm font-bold bg-yellow-500/10 px-3 py-1.5 rounded-lg border border-yellow-500/20">
+                                            ${slide.costNote}
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    `;
+
+                case 'cta':
+                    return SlideWrapper(`
+                        <div class="h-full flex flex-col md:flex-row bg-white rounded-3xl overflow-hidden shadow-2xl">
+                            
+                            <div class="w-full md:w-5/12 bg-slate-900 text-white p-8 flex flex-col items-center justify-center relative overflow-hidden">
+                                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-800/40 via-slate-900 to-slate-900"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-indigo-900/50 to-transparent pointer-events-none"></div>
+                                
+                                <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
+                                    <p class="text-indigo-400 font-bold tracking-widest uppercase mb-6 text-xs">Scan or Click to Start</p>
+                                    
+                                    <div class="relative group cursor-pointer mb-4">
+                                        <div class="absolute -inset-4 border-2 border-indigo-500/30 rounded-3xl animate-[spin_10s_linear_infinite] pointer-events-none"></div>
+                                        <div class="absolute -inset-4 border-2 border-indigo-400/20 rounded-3xl animate-[spin_15s_linear_infinite_reverse] pointer-events-none"></div>
+                                        
+                                        <div class="relative w-64 h-64 bg-white rounded-2xl p-4 shadow-[0_0_50px_rgba(99,102,241,0.2)] transition-transform duration-500 group-hover:scale-105">
+                                            <a href="${slide.formUrl}" target="_blank" class="w-full h-full flex items-center justify-center overflow-hidden rounded-xl" title="フォームを開く">
+                                                <img src="${slide.qrCodeUrl}" alt="QR Code" class="w-full h-full object-contain">
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-[10px] text-slate-400 font-mono mb-6 group-hover:text-indigo-300 transition-colors">( Click QR code to open form )</p>
+                                    
+                                    <h2 class="text-3xl font-black text-white tracking-tight">申込フォーム</h2>
+                                </div>
+                            </div>
+
+                            <div class="w-full md:w-7/12 p-8 md:p-10 flex flex-col bg-slate-50 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl"></div>
+
+                                <div class="relative z-10 h-full flex flex-col justify-between">
+                                    
+                                    <div>
+                                        <h3 class="text-xl md:text-2xl font-black text-slate-800 leading-tight mb-8">
+                                            ${slide.subtitle}
+                                        </h3>
+                                    </div>
+
+                                    <div class="mb-6 flex-1">
+                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5 ml-1 flex items-center gap-2">
+                                            <i data-lucide="list-ordered" class="w-4 h-4"></i> Campaign Flow
+                                        </h4>
+                                        <div class="space-y-5">
+                                            ${slide.steps ? slide.steps.map((step, i) => `
+                                                <div class="flex items-start gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group hover:border-indigo-300 transition-colors">
+                                                    ${i !== slide.steps.length - 1 ? '<div class="absolute left-[27px] top-10 bottom-[-24px] w-0.5 bg-slate-100 group-hover:bg-indigo-50 transition-colors"></div>' : ''}
+                                                    
+                                                    <div class="w-8 h-8 rounded-full ${i === 0 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-slate-100 text-slate-500'} text-sm flex items-center justify-center font-bold shrink-0 relative z-10">
+                                                        ${i + 1}
+                                                    </div>
+                                                    <p class="text-slate-700 font-bold text-base leading-snug pt-1">
+                                                        ${step}
+                                                    </p>
+                                                </div>
+                                            `).join('') : ''}
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-xs md:text-sm text-slate-600 leading-relaxed">
+                                        ${slide.closing}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `, slide);
+
+                default:
+                    // Generic fallback renderer for simple slides
+                    let itemsHtml = '';
+                    if (slide.items && !slide.content) {
+                        itemsHtml = `
+                            <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 relative z-10">
+                                ${slide.items.map(item => `
+                                    <li class="flex items-start p-4 bg-slate-50 rounded-xl">
+                                        <div class="bg-sky-100 p-2 rounded-full mr-4 mt-1 flex-shrink-0">
+                                            <i data-lucide="${item.icon || 'check-circle'}" class="text-sky-600 w-6 h-6"></i>
+                                        </div>
+                                        <div>
+                                            ${item.title ? `<div class="font-bold text-xl text-slate-800 mb-1">${item.title}</div>` : ''}
+                                            <div class="text-lg text-slate-600 leading-snug">${item.desc || item.value || (typeof item === 'string' ? item : '')}</div>
+                                            ${item.label ? `<div class="text-xs text-slate-400 uppercase mt-2 font-bold tracking-wider">${item.label}</div>` : ''}
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                    }
+
+                    let stepsHtml = '';
+                    if (slide.steps) {
+                        stepsHtml = `
+                            <div class="flex items-center justify-between relative z-10 w-full mt-6">
+                                ${slide.steps.map((step, i) => `
+                                    <div class="flex flex-col items-center relative z-10 w-1/3">
+                                        <div class="w-16 h-16 bg-sky-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg shadow-sky-200">
+                                            ${i+1}
+                                        </div>
+                                        <h4 class="text-lg md:text-xl font-bold text-slate-700 text-center">${step}</h4>
+                                    </div>
+                                `).join('')}
+                                <div class="absolute top-8 left-0 w-full h-1 bg-slate-200 -z-0"></div>
+                            </div>
+                        `;
+                    }
+
+                    let cardsHtml = '';
+                    if (slide.cards) {
+                        cardsHtml = `
+                            <div class="grid grid-cols-2 gap-8 relative z-10 h-full">
+                                ${slide.cards.map(card => `
+                                    <div class="bg-slate-50 border border-slate-200 p-8 rounded-2xl hover:shadow-md transition-shadow">
+                                        <h4 class="text-2xl font-bold text-sky-700 mb-4">${card.title}</h4>
+                                        <p class="text-xl text-slate-600">${card.desc}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    let visualHtml = '';
+                    if (slide.visual && !slide.content) {
+                        visualHtml = `
+                            <div class="flex justify-center text-slate-200 mt-12 relative z-10">
+                                ${slide.visual === 'shield-spam' ? '<i data-lucide="shield-alert" class="text-red-200 w-[180px] h-[180px]"></i>' : ''}
+                            </div>
+                        `;
+                    }
+
+                    return SlideWrapper(`
+                        ${slide.subtitle ? `<h3 class="text-2xl text-slate-500 mb-10 font-light">${slide.subtitle}</h3>` : ''}
+                        
+                        <div class="bg-white p-8 md:p-10 rounded-3xl border border-slate-100 shadow-xl flex-1 flex flex-col justify-center relative overflow-hidden">
+                            <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
+                                ${slide.visual === 'shield-spam' ? '<i data-lucide="shield-alert" class="w-[300px] h-[300px]"></i>' : 
+                                  slide.visual === 'database' ? '<i data-lucide="database" class="w-[300px] h-[300px]"></i>' : 
+                                  !slide.visual ? '<i data-lucide="brain" class="w-[300px] h-[300px]"></i>' : ''}
+                            </div>
+
+                            ${slide.content && typeof slide.content === 'string' ? 
+                                `<p class="text-xl md:text-2xl text-slate-700 whitespace-pre-line leading-relaxed font-medium relative z-10">${slide.content}</p>` : ''
+                            }
+                            
+                            ${itemsHtml}
+                            ${stepsHtml}
+                            ${cardsHtml}
+                            ${visualHtml}
+                        </div>
+                    `, slide);
+            }
+        };
+        
+        // --- Render Function ---
+        const render = () => {
+            const app = document.getElementById('app');
+            const { currentSlide, viewMode } = state;
+            
+            // Top Bar
+            const headerHtml = `
+                <div class="bg-white shadow-sm px-6 py-3 flex justify-between items-center z-30 border-b border-slate-300 flex-shrink-0 relative">
+                    <div class="text-slate-800 font-bold flex items-center gap-2">
+                        <i data-lucide="brain" class="text-sky-500 w-6 h-6"></i>
+                        <span>AI営業アルゴリズム</span>
+                    </div>
+
+                    <div class="absolute left-1/2 transform -translate-x-1/2">
+                        <button onclick="toggleViewMode()" class="text-slate-500 font-medium text-sm hover:text-sky-600 transition-colors px-4 py-2">
+                             ${currentSlide + 1} / ${totalSlides} <span class="text-xs ml-1 opacity-50">(一覧)</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleFullScreen()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors" title="${state.isFullScreen ? '全画面解除' : '全画面表示'}">
+                            <i data-lucide="${state.isFullScreen ? 'minimize' : 'monitor'}" class="w-5 h-5"></i>
+                        </button>
+                        <div class="relative">
+                            <button onclick="toggleSettings()" class="p-2 hover:bg-slate-100 rounded-lg ${state.showSettings ? 'text-sky-600 bg-slate-100' : 'text-slate-600'} transition-colors" title="文字サイズ設定">
+                                <i data-lucide="settings" class="w-5 h-5"></i>
+                            </button>
+                            ${state.showSettings ? `
+                                <div class="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-xs font-bold text-slate-500 uppercase">文字サイズ</span>
+                                        <span id="zoomValueDisplay" class="text-xs font-bold text-sky-600 bg-sky-50 px-2 py-1 rounded">${state.zoomLevel}%</span>
+                                    </div>
+                                    <input type="range" min="70" max="150" value="${state.zoomLevel}" oninput="setZoom(this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <button onclick="toggleViewMode()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors" title="一覧表示切替">
+                            <i data-lucide="${viewMode === 'slide' ? 'layout-grid' : 'maximize-2'}" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            let mainContentHtml = '';
+
+            if (viewMode === 'slide') {
+                // Slide View
+                mainContentHtml = `
+                    <div class="flex-1 overflow-hidden relative flex items-center justify-center p-4 md:p-8 bg-slate-100">
+                        <div class="w-full max-w-7xl aspect-video relative transition-all duration-300">
+                            ${renderSlideContent(slidesData[currentSlide])}
+                        </div>
+                        
+                        <button 
+                            onclick="prevSlide()" 
+                            class="fixed left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white text-slate-400 hover:text-sky-600 p-3 rounded-full shadow-lg backdrop-blur-sm border border-white/50 transition-all duration-300 ${currentSlide === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}"
+                            title="前のページへ"
+                        >
+                            <i data-lucide="chevron-left" class="w-8 h-8"></i>
+                        </button>
+
+                        <button 
+                            onclick="nextSlide()" 
+                            class="fixed right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white text-slate-400 hover:text-sky-600 p-3 rounded-full shadow-lg backdrop-blur-sm border border-white/50 transition-all duration-300 ${currentSlide === totalSlides - 1 ? 'opacity-0 pointer-events-none' : 'opacity-100'}"
+                            title="次のページへ"
+                        >
+                            <i data-lucide="chevron-right" class="w-8 h-8"></i>
+                        </button>
+                        
+                        <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2 items-center bg-black/10 px-4 py-2 rounded-full backdrop-blur-md">
+                            ${[...Array(5)].map((_, i) => {
+                                const idx = currentSlide - 2 + i;
+                                if (idx < 0 || idx >= totalSlides) return '<div class="w-1.5 h-1.5"></div>'; // 空白で位置調整
+                                return `<div class="h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-sky-500 w-6 shadow-sm' : 'bg-slate-400/50 w-1.5'}"></div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Grid View
+                const gridItems = slidesData.map((slide, index) => `
+                    <div 
+                        onclick="goToSlide(${index})"
+                        class="aspect-video bg-white rounded-xl shadow-sm cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group border border-slate-200 ${currentSlide === index ? 'ring-4 ring-sky-400' : ''}"
+                    >
+                        <div class="absolute top-3 right-3 bg-slate-900/80 text-white text-xs font-bold px-2 py-1 rounded-md z-10">${index + 1}</div>
+                        <div class="p-4 transform scale-[0.4] origin-top-left w-[250%] h-[250%] pointer-events-none select-none">
+                            <div class="flex flex-col h-full p-8">
+                                <h1 class="text-6xl font-bold text-slate-800 mb-4 truncate">${slide.title}</h1>
+                                <p class="text-3xl text-slate-500 truncate">${slide.subtitle || slide.section || ''}</p>
+                                <div class="mt-8 flex-1 bg-slate-100 rounded-xl"></div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-sky-900/0 group-hover:bg-sky-900/5 transition-colors"></div>
+                    </div>
+                `).join('');
+
+                mainContentHtml = `
+                    <div class="flex-1 overflow-hidden relative bg-slate-100">
+                        <div class="w-full h-full overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4 pb-20">
+                            ${gridItems}
+                        </div>
+                    </div>
+                `;
+            }
+
+            app.innerHTML = headerHtml + mainContentHtml;
+            
+            // Re-initialize icons
+            lucide.createIcons();
+        };
+
+        // Initial Render
+        render();
+    </script>
+</body>
+</html>

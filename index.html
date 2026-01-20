@@ -137,16 +137,11 @@
                 ]
             },
             {
-                id: 30,
-                type: 'crisis-graph',
-                section: "Introduction: The Reality",
-                title: "日本を襲う「人手不足」の未来",
-                // ▼▼▼ この内容をWARNINGの赤い枠内に入れます ▼▼▼
-                subtitle: "労働人口の急減：構造的な危機（Structural Crisis）", 
-                dataPoint: "644万人",
-                dataSource: "2030年の労働力不足予測（リクルートワークス研究所）",
-                implication: "これは一時的な景気変動ではなく、<br>不可逆的な<span class='text-red-600 font-bold'>「人口動態の変化」</span>である。",
-                crisis: "従来のような「人を大量に採用して売上をスケールさせる」モデルは物理的に維持不可能。<br>採用競争は<span class='bg-slate-800 text-white px-1'>ゼロサム</span>から<span class='bg-red-600 text-white px-1'>マイナスサム</span>へ突入する。"
+                id: 31, // ※現在の並び順に合わせたIDにしてください
+                type: 'chapter-title',
+                section: "序章：レガシーアルゴリズムの崩壊",
+                title: "なぜ「テレアポ」を<br>捨てなければならないのか",
+                subtitle: "なぜ従来の営業スタイルを変える必要があるのか"
             },
             {
                 id: 3,
@@ -159,11 +154,16 @@
                 chartTitle: "職種別有効求人倍率の推移（営業職の特異点）"
             },
             {
-                id: 31,
-                type: 'chapter-title',
-                section: "Prologue",
-                title: "序章：なぜ「テレアポ」を<br>捨てなければならないのか",
-                subtitle: "なぜ従来の営業スタイルを変える必要があるのか"
+                id: 30,
+                type: 'crisis-graph',
+                section: "Introduction: The Reality",
+                title: "日本を襲う「人手不足」の未来",
+                // ▼▼▼ この内容をWARNINGの赤い枠内に入れます ▼▼▼
+                subtitle: "労働人口の急減：構造的な危機（Structural Crisis）", 
+                dataPoint: "644万人",
+                dataSource: "2030年の労働力不足予測（リクルートワークス研究所）",
+                implication: "これは一時的な景気変動ではなく、<br>不可逆的な<span class='text-red-600 font-bold'>「人口動態の変化」</span>である。",
+                crisis: "従来のような「人を大量に採用して売上をスケールさせる」モデルは物理的に維持不可能。<br>採用競争は<span class='bg-slate-800 text-white px-1'>ゼロサム</span>から<span class='bg-red-600 text-white px-1'>マイナスサム</span>へ突入する。"
             },
             {
                 id: 4,
@@ -195,6 +195,13 @@
                 labels: ["リソース", "スケーラビリティ", "ナレッジ"]
             },
             {
+                id: 32, // ※お手元のコードの順番に合わせてID数字は調整してください
+                type: 'chapter-title',
+                section: "本題1: The Architecture（学習データと推論）",
+                title: "AI×インサイトセールスの正体",
+                subtitle: "具体的にAIをどうやって営業に組み込むのか？<br>「リスト作成」の概念を根底から覆す"
+            },
+            {
                 id: 6,
                 type: 'legacy-limits',
                 section: "本題①: The Architecture",
@@ -207,14 +214,6 @@
                     { title: "System Bug", desc: "99.9%のエラーを吐き出し続けるシステムを運用しているのと同じ状態。これは営業マンの能力不足ではなく、「ターゲティングのアルゴリズム」自体がバグを起こしている。" }
                 ],
                 visual: "dots-one-blue"
-            },
-            {
-                id: 32, // IDは重複しない任意の数字
-                type: 'chapter-title', // 黒背景のデザインを適用
-                section: "The Solution",
-                title: "AI×インサイトセールスの正体",
-                // 長いので改行タグ <br> を入れています
-                subtitle: "具体的にAIをどうやって営業に組み込むのか？<br>「リスト作成」の概念を根底から覆す"
             },
             {
                 id: 7,
@@ -299,9 +298,9 @@
                 benefit: "Benefit: トップセールスの「暗黙知」を形式知化し、新人でも均質なクオリティで商談が<br>可能になる。"
             },
             {
-                id: 35, // 重複しない任意のID
+                id: 35, // ※お手元のIDに合わせてください
                 type: 'chapter-title',
-                section: "Process Optimization",
+                section: "本題②: Process Optimization",
                 title: "AI技術の効率性 × 人間の専門性で<br>成果を最大化",
                 subtitle: "AI × Human-in-the-Loop"
             },
@@ -398,6 +397,13 @@
                 ]
             },
             {
+                id: 40, // ※お手元のIDに合わせてください
+                type: 'chapter-title',
+                section: "本題３：Use Case（AIが見抜いた隠れた変数）",
+                title: "【事例】テレアポを捨てて<br>過去最高益を出した企業たち",
+                subtitle: "" // シンプルにタイトルのみで強調
+            },
+            {
                 id: 17,
                 type: 'metrics',
                 section: "本題③: Use Case",
@@ -409,13 +415,6 @@
                     { val: "4億円以上", label: "累計売上貢献", desc: "事業成長への直接的インパクト" }
                 ],
                 scope: "Scope: 従業員数名の町工場から、上場企業の新規事業開発部まで幅広く対応。"
-            },
-            {
-                id: 40, // 重複しない任意のID
-                type: 'chapter-title',
-                section: "Case Studies",
-                title: "【事例】「脱テレアポ」で<br>過去最高益を達成した成功事例",
-                subtitle: "" // シンプルにタイトルのみで強調
             },
             {
                 id: 18,

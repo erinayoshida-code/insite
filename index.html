@@ -157,16 +157,6 @@
                 subtitle: "なぜ従来の営業スタイルを変える必要があるのか"
             },
             {
-                id: 3,
-                type: 'graph-bar',
-                section: "序章: レガシーアルゴリズムの崩壊",
-                title: "「営業」が最も採用できない職種に",
-                subtitle: "営業職：採用難易度No.1のボトルネック",
-                insight: "2.31倍の高騰: 事務職（0.3倍）と比較し、営業職は約7倍。「最も採用コストが高く、最も採用できない」職種となっている。\nHigh Churn Rate: 営業職の離職率は主要産業でトップクラス（約40%が退職検討）。\n黒字倒産のリスク: 「届ける人がいない」ための倒産が急増。",
-                graphData: "job-ratio",
-                chartTitle: "職種別有効求人倍率の推移（営業職の特異点）"
-            },
-            {
                 id: 30,
                 type: 'crisis-graph',
                 section: "Introduction: The Reality",
@@ -177,6 +167,16 @@
                 dataSource: "2030年の労働力不足予測（リクルートワークス研究所）",
                 implication: "これは一時的な景気変動ではなく、<br>不可逆的な<span class='text-red-600 font-bold'>「人口動態の変化」</span>である。",
                 crisis: "従来のような「人を大量に採用して売上をスケールさせる」モデルは物理的に維持不可能。<br>採用競争は<span class='bg-slate-800 text-white px-1'>ゼロサム</span>から<span class='bg-red-600 text-white px-1'>マイナスサム</span>へ突入する。"
+            },
+            {
+                id: 3,
+                type: 'graph-bar',
+                section: "序章: レガシーアルゴリズムの崩壊",
+                title: "「営業」が最も採用できない職種に",
+                subtitle: "営業職：採用難易度No.1のボトルネック",
+                insight: "2.31倍の高騰: 事務職（0.3倍）と比較し、営業職は約7倍。「最も採用コストが高く、最も採用できない」職種となっている。\nHigh Churn Rate: 営業職の離職率は主要産業でトップクラス（約40%が退職検討）。\n黒字倒産のリスク: 「届ける人がいない」ための倒産が急増。",
+                graphData: "job-ratio",
+                chartTitle: "職種別有効求人倍率の推移（営業職の特異点）"
             },
             {
                 id: 4,
@@ -1143,33 +1143,73 @@
                     `, slide);
                 
                 case 'cost-structure':
+                    // ▼▼▼ グラフ部分（変更なし） ▼▼▼
                     const visualStack = slide.visualPoints.map((vp, i) => `
                         <div class="w-full ${vp.height} ${vp.color} rounded-lg shadow-md mb-2 flex items-center justify-center text-white font-bold relative group transform hover:scale-105 transition-transform ${i===0 ? 'z-20' : 'z-0'}">
-                            ${vp.label}
-                            ${i===0 ? '<div class="absolute -right-4 -top-4 text-red-500 animate-bounce"><i data-lucide="alert-octagon" class="w-8 h-8 bg-white rounded-full"></i></div>' : ''}
+                            <span class="text-2xl drop-shadow-md tracking-wider">${vp.label}</span>
+                            ${i===0 ? '<div class="absolute -right-6 -top-6 text-red-500 animate-bounce"><i data-lucide="alert-octagon" class="w-10 h-10 bg-white rounded-full shadow-lg"></i></div>' : ''}
                         </div>
                     `).join('');
 
-                    const detailsList = slide.details.map(detail => `
-                        <div class="mb-6">
-                            <h4 class="text-lg font-bold text-slate-700 mb-1 border-l-4 border-sky-500 pl-3">${detail.title}</h4>
-                            <p class="text-slate-600 text-sm leading-relaxed">${detail.desc}</p>
+                    // ▼▼▼ 説明文部分：タイトル強調・隙間調整 ▼▼▼
+                    const detailsList = slide.details.map((detail, i) => {
+                        // アイコンと色をタイトルごとに変える
+                        let titleColor = "text-slate-700";
+                        let icon = "";
+                        let borderColor = "border-slate-300";
+
+                        // タイトルに応じて色分け
+                        if (detail.title.includes("Investment")) {
+                            titleColor = "text-sky-600"; // 青
+                            borderColor = "border-sky-500";
+                            icon = '<i data-lucide="trending-up" class="w-6 h-6 mr-2"></i>';
+                        } else if (detail.title.includes("Assets")) {
+                            titleColor = "text-amber-600"; // 黄/オレンジ
+                            borderColor = "border-amber-500";
+                            icon = '<i data-lucide="clock" class="w-6 h-6 mr-2"></i>';
+                        } else if (detail.title.includes("Warning")) {
+                            titleColor = "text-red-600"; // 赤
+                            borderColor = "border-red-500";
+                            icon = '<i data-lucide="alert-triangle" class="w-6 h-6 mr-2"></i>';
+                        }
+
+                        // mb-6 -> mb-3 に変更して隙間を詰める
+                        return `
+                        <div class="mb-3 bg-slate-50 p-5 rounded-xl border-l-8 ${borderColor} shadow-sm hover:shadow-md transition-shadow">
+                            <h4 class="text-2xl font-black ${titleColor} mb-2 flex items-center uppercase tracking-wide">
+                                ${icon}
+                                ${detail.title}
+                            </h4>
+                            <p class="text-xl font-bold text-slate-700 leading-snug">
+                                ${detail.desc}
+                            </p>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
 
                     return SlideWrapper(`
-                        <h3 class="text-xl text-slate-500 mb-6">${slide.subtitle}</h3>
-                        <div class="flex flex-col md:flex-row h-full gap-8">
-                            <div class="flex-1 flex flex-col justify-end items-center bg-slate-50 rounded-2xl p-8 border border-slate-200">
-                                <div class="w-3/4 max-w-sm flex flex-col-reverse">
-                                    ${visualStack}
-                                </div>
-                                <div class="mt-4 text-center text-slate-400 text-sm font-bold">コストの積み上げ構造</div>
+                        <div class="flex flex-col h-full font-sans">
+                            <div class="mb-6 shrink-0 border-b border-slate-200 pb-2">
+                                <h3 class="text-4xl font-bold text-slate-500 mb-1">${slide.subtitle}</h3>
                             </div>
 
-                            <div class="flex-1 flex flex-col justify-center">
-                                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                                    ${detailsList}
+                            <div class="flex-1 flex gap-8 items-start h-full overflow-hidden">
+                                
+                                <div class="w-4/12 flex flex-col h-full">
+                                    <div class="flex-1 bg-slate-50 rounded-2xl p-6 border border-slate-200 flex flex-col justify-center items-center shadow-inner relative overflow-hidden">
+                                        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 20px 20px;"></div>
+                                        
+                                        <div class="w-full flex flex-col-reverse relative z-10">
+                                            ${visualStack}
+                                        </div>
+                                        <div class="mt-8 text-center text-slate-400 text-lg font-bold relative z-10">コストの積み上げ構造</div>
+                                    </div>
+                                </div>
+
+                                <div class="w-8/12 flex flex-col justify-center h-full">
+                                    <div class="flex flex-col gap-1">
+                                        ${detailsList}
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -727,6 +727,10 @@
         const SlideWrapper = (content, slide) => `
             <div class="w-full h-full relative overflow-hidden bg-white shadow-2xl rounded-2xl flex flex-col slide-enter">
                 ${BackgroundDecoration()}
+                
+                <div class="absolute -top-5 right-6 z-50">
+                    <img src="writeup_logo.png" alt="Company Logo" class="h-24 md:h-32 object-contain drop-shadow-md">
+                </div>
                 <div class="relative z-10 h-full flex flex-col p-6 md:p-10">
                     <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-2">
                         <div class="z-20">
@@ -742,7 +746,6 @@
                                 </h2>
                             ` : ''}
                         </div>
-                        <i data-lucide="brain" class="text-slate-100 absolute top-8 right-8 z-0" style="width: 100px; height: 100px; stroke-width: 0.5;"></i>
                     </div>
 
                     <div class="flex-1 flex flex-col justify-center relative z-10 w-full">
@@ -788,6 +791,10 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-30">
+                                    <img src="writeup_logo.png" alt="Company Logo" class="h-32 md:h-48 object-contain">
+                                </div>
                             </div>
                         `;
                     }
@@ -807,6 +814,10 @@
                             </div>
                             <div class="flex items-center justify-center gap-4 relative z-10">
                                 <p class="text-xl text-slate-600 font-medium">${slide.speaker}</p>
+                            </div>
+
+                            <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 z-30">
+                                <img src="writeup_logo.png" alt="Company Logo" class="h-40 md:h-64 object-contain">
                             </div>
                         </div>
                     `;

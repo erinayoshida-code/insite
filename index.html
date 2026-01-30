@@ -150,6 +150,44 @@
                 ]
             },
             {
+                id: 201, // IDは重複しなければ何でもOKです
+                type: 'full-image',
+                image: "749607f7-cd1b-46c3-92f0-2bbf1ea19a1a.jpg" // アップロードした画像ファイル名
+            },
+            {
+                id: 202, // IDは重複しなければ何でもOKです
+                type: 'full-image',
+                image: "e8851869-2371-48e5-9c14-bb2b0f01c11e.jpg" // アップロードした画像ファイル名
+            },
+            {
+                id: 203, // IDは重複しなければ何でもOKです
+                type: 'full-image',
+                image: "1e028ac2-d3a4-4440-8d7c-115e585fa29c.jpg" // アップロードした画像ファイル名
+            },
+            {
+                id: 24,
+                type: 'offer',
+                section: "結び: Scalability",
+                title: "特別オファー",
+                offerTitle: "【ITトレンド2026　視聴者限定特典】<br>御社のための「見込み客リスト」を作成します。",
+                process: "<strong>AI Inference:</strong><br>御社の商材情報を入力するだけで、AIが500万件のDBから推論を実行。",
+                items: [
+                    { 
+                        title: "Hot Leads", 
+                        desc: "今すぐ営業すべき<br>見込み企業リスト <span class='text-yellow-400 font-bold text-3xl'>100社</span>", 
+                        icon: "database" 
+                    },
+                    { 
+                        title: "Draft Script", 
+                        // ▼▼▼ ここを修正：「アプローチ文面案」を強調 ▼▼▼
+                        desc: "そのリストに刺さる<span class='text-yellow-400 font-bold text-3xl'>アプローチ文面案</span>", 
+                        icon: "file-text" 
+                    }
+                ],
+                cost: "完全無料",
+                costNote: "（本講演の視聴者限定）"
+            },
+            {
                 id: 31, // ※現在の並び順に合わせたIDにしてください
                 type: 'chapter-title',
                 section: "序章：レガシーアルゴリズムの崩壊",
@@ -232,7 +270,7 @@
                 id: 7,
                 type: 'prediction-cards',
                 section: "本題①: The Architecture",
-                title: "2025年問題：AI営業のコモディティ化",
+                title: "2026年問題：AI営業のコモディティ化",
                 subtitle: "「量産型AI営業」とフィルタリング強化",
                 graphLabel: "Generative AIによる「オートコール」「自動フォーム送信」の指数関数的増加",
                 cards: [
@@ -821,7 +859,13 @@
                             </div>
                         </div>
                     `;
-
+                case 'full-image':
+                    return `
+                        <div class="w-full h-full relative overflow-hidden bg-black slide-enter">
+                            <img src="${slide.image}" alt="Event Photo" class="absolute inset-0 w-full h-full object-cover">
+                            
+                            </div>
+                    `;
                 case 'profile':
                     return SlideWrapper(`
                         <div class="flex flex-col md:flex-row h-full gap-6 items-stretch relative overflow-hidden bg-white rounded-2xl">
